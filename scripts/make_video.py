@@ -29,6 +29,8 @@ from matplotlib.offsetbox import AnchoredOffsetbox, HPacker, TextArea, VPacker  
 from matplotlib.patches import Circle, FancyBboxPatch, Rectangle  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
 
+from scripts._style import HEAD, MONO  # noqa: E402 — registers bundled fonts on import
+
 REPO = Path(__file__).resolve().parent.parent
 load_dotenv(REPO / ".env")
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
@@ -109,14 +111,14 @@ SEGMENTS = [
               "multi-armed bandit learns which strategy wins on your tasks, concentrates on it, and "
               "keeps improving across runs. It's a harness for choosing your harness's strategy."),
     dict(id="3b", slide=dict(kind="figure", title="Architecture — one self-improving loop",
-         image=str(RESULTS / "architecture.png"),
+         image=str(RESULTS / "dark" / "architecture.png"),
          caption="select → run → reward → update (online) → persist · every domain plugs in arms + reward"),
          text="Here's the architecture. A task comes in, the selector's policy picks a strategy, "
               "that strategy runs and produces an output, and a reward function scores it. The "
               "reward updates the policy, online, and persists to disk. That's the whole "
               "self-improving loop. Every domain just plugs in its own strategies and its own reward."),
     dict(id="04", slide=dict(kind="figure", title="How it works — proven on text-to-SQL",
-         image=str(RESULTS / "exp_01_cumulative_reward.png"),
+         image=str(RESULTS / "dark" / "exp_01_cumulative_reward.png"),
          caption="BIRD-SQL · gpt-4o-mini · the bandit beats random and approaches the oracle"),
          text="Here's the loop. The bandit picks a workflow, runs it, and gets a reward by "
               "executing the result. For our first domain, text-to-SQL, we run the generated query "
@@ -125,7 +127,7 @@ SEGMENTS = [
               "bandit learns online to drop the weak workflow and concentrate on the strong ones, "
               "beating random and approaching the oracle."),
     dict(id="05", slide=dict(kind="figure", title="It generalizes — four domains, one selector",
-         image=str(RESULTS / "sweep_matrix.png"),
+         image=str(RESULTS / "dark" / "sweep_matrix.png"),
          caption="SQL · code (tests pass) · search (file match) · compaction (downstream QA)"),
          text="But the selection layer isn't about SQL. It's domain-agnostic. We plugged in three "
               "more domains: code generation, rewarded by unit tests; agentic search, rewarded by "
@@ -133,7 +135,7 @@ SEGMENTS = [
               "survives. Same selector, different arms and reward. In every domain, it learns the "
               "best strategy."),
     dict(id="06", slide=dict(kind="figure", title="A ladder: bandit → contextual → multi-step RL",
-         image=str(RESULTS / "rl_multihop.png"),
+         image=str(RESULTS / "dark" / "rl_multihop.png"),
          caption="Contextual: 1.00 vs 0.50 per-task · REINFORCE: 0.81 vs 0.35 best fixed-horizon"),
          text="And selection is a ladder. The basic bandits learn the best arm on average. A "
               "contextual bandit learns the best arm per task: on tasks where the winner depends on "
@@ -171,7 +173,7 @@ SEGMENTS = [
               "from demonstrations, with the bandit selecting over an evolving library. The selection "
               "layer is the foundation."),
     dict(id="10", slide=dict(kind="title", title="Don't hand-pick your agent's workflow.",
-         subtitle="Let it learn.", foot="github.com/ms-d-kim/agentforge"),
+         subtitle="Let it learn.", foot="github.com/ms-d-kim/agentforge", title_fs=54),
          text="AgentForge. Don't hand-pick your agent's workflow. Let it learn. The code is open "
               "source. Thank you."),
 ]
@@ -215,12 +217,15 @@ def _tokenize_code(line):
 
 def _footer(fig):
     fig.add_artist(Circle((0.073, 0.052), 0.006, transform=fig.transFigure, color=GREEN, zorder=5))
-    fig.text(0.086, 0.05, "AgentForge — a self-improving agent SDK", color=MUTED, fontsize=14, va="center")
-    fig.text(0.927, 0.05, "CS 153 · Frontier Systems", color=MUTED, fontsize=14, ha="right", va="center")
+    fig.text(0.086, 0.05, "AgentForge — a self-improving agent SDK", color=MUTED,
+             fontsize=14, va="center", fontfamily=MONO)
+    fig.text(0.927, 0.05, "CS 153 · Frontier Systems", color=MUTED, fontsize=14,
+             ha="right", va="center", fontfamily=MONO)
 
 
 def _render_code(fig, spec):
-    fig.text(0.5, 0.90, spec["title"], color=FG, fontsize=40, ha="center", va="center", fontweight="bold")
+    fig.text(0.5, 0.90, spec["title"], color=FG, fontsize=42, ha="center", va="center",
+             fontweight="bold", fontfamily=HEAD)
     ax = fig.add_axes([0.135, 0.135, 0.73, 0.65])
     ax.axis("off")
     ax.set_xlim(0, 1)
@@ -232,9 +237,9 @@ def _render_code(fig, spec):
                  edgecolor="none", zorder=1))
     for i, c in enumerate(["#FF5F56", "#FFBD2E", "#27C93F"]):
         ax.add_patch(Circle((0.028 + i * 0.024, 1 - barh / 2), 0.0075, transform=ax.transAxes, color=c, zorder=2))
-    ax.text(0.5, 1 - barh / 2, "selector.py", color=MUTED, fontsize=14, family="monospace",
+    ax.text(0.5, 1 - barh / 2, "selector.py", color=MUTED, fontsize=14, fontfamily=MONO,
             ha="center", va="center", transform=ax.transAxes, zorder=2)
-    rows = [HPacker(children=[TextArea(t, textprops=dict(color=c, fontfamily="monospace", fontsize=20))
+    rows = [HPacker(children=[TextArea(t, textprops=dict(color=c, fontfamily=MONO, fontsize=20))
                               for t, c in _tokenize_code(ln)], align="baseline", pad=0, sep=0)
             for ln in spec["code"].split("\n")]
     box = VPacker(children=rows, align="left", pad=0, sep=8)
@@ -247,48 +252,55 @@ def render_slide(spec, path):
     kind = spec["kind"]
 
     if kind == "title":
-        fig.text(0.5, 0.595, spec["title"], color=FG, fontsize=88, ha="center", va="center", fontweight="bold")
-        fig.text(0.5, 0.47, spec.get("subtitle", ""), color=GREEN, fontsize=40, ha="center", va="center")
+        fig.text(0.5, 0.595, spec["title"], color=FG, fontsize=spec.get("title_fs", 90),
+                 ha="center", va="center", fontweight="bold", fontfamily=HEAD)
+        fig.text(0.5, 0.47, spec.get("subtitle", ""), color=GREEN, fontsize=40,
+                 ha="center", va="center", fontfamily=HEAD)
         fig.add_artist(Line2D([0.45, 0.55], [0.40, 0.40], color=GREEN, lw=2.5, transform=fig.transFigure))
         if spec.get("foot"):
-            fig.text(0.5, 0.33, spec["foot"], color=MUTED, fontsize=23, ha="center", va="center", family="monospace")
+            fig.text(0.5, 0.33, spec["foot"], color=MUTED, fontsize=23, ha="center",
+                     va="center", fontfamily=MONO)
 
     elif kind == "bullets":
         fig.add_artist(Line2D([0.072, 0.072], [0.27, 0.80], color=GREEN, lw=4, transform=fig.transFigure))
-        fig.text(0.105, 0.845, spec["title"], color=FG, fontsize=48, fontweight="bold", va="center")
+        fig.text(0.105, 0.845, spec["title"], color=FG, fontsize=48, fontweight="bold",
+                 va="center", fontfamily=HEAD)
         y = 0.665
         for b in spec["bullets"]:
             if b:
                 fig.text(0.105, y, "▸", color=GREEN, fontsize=25, va="center")
-                fig.text(0.132, y, b, color="#D7D7DD", fontsize=30, va="center")
+                fig.text(0.135, y, b, color="#D7D7DD", fontsize=26, va="center", fontfamily=MONO)
             y -= 0.108
 
     elif kind == "code":
         _render_code(fig, spec)
 
     elif kind == "figure":
-        fig.text(0.5, 0.915, spec["title"], color=FG, fontsize=40, fontweight="bold", ha="center", va="center")
-        fig.add_artist(FancyBboxPatch((0.095, 0.15), 0.81, 0.665,
-                       boxstyle="round,pad=0,rounding_size=0.012", transform=fig.transFigure,
-                       facecolor="white", edgecolor=BORDER, lw=1.5, zorder=0.5))
-        ax = fig.add_axes([0.12, 0.175, 0.76, 0.615], zorder=1)
+        fig.text(0.5, 0.925, spec["title"], color=FG, fontsize=40, fontweight="bold",
+                 ha="center", va="center", fontfamily=HEAD)
+        # Dark figures share the slide's black bg → place directly, with a hairline frame.
+        fig.add_artist(FancyBboxPatch((0.085, 0.15), 0.83, 0.66, boxstyle="round,pad=0,rounding_size=0.008",
+                       transform=fig.transFigure, facecolor="none", edgecolor=BORDER, lw=1.2, zorder=1))
+        ax = fig.add_axes([0.10, 0.165, 0.80, 0.63], zorder=2)
         ax.axis("off")
-        ax.patch.set_visible(False)
         ax.imshow(plt.imread(spec["image"]))
         if spec.get("caption"):
-            fig.text(0.5, 0.10, spec["caption"], color=MUTED, fontsize=22, ha="center", va="center")
+            fig.text(0.5, 0.105, spec["caption"], color=MUTED, fontsize=22, ha="center",
+                     va="center", fontfamily=MONO)
 
     elif kind == "compare":
-        fig.text(0.5, 0.90, spec["title"], color=FG, fontsize=48, fontweight="bold", ha="center", va="center")
+        fig.text(0.5, 0.90, spec["title"], color=FG, fontsize=48, fontweight="bold",
+                 ha="center", va="center", fontfamily=HEAD)
         fig.add_artist(Line2D([0.5, 0.5], [0.13, 0.80], color=BORDER, lw=2, transform=fig.transFigure))
         for x0, lines, headcol, bodycol in [(0.08, spec["left"], MUTED, "#A7A7B0"),
                                             (0.55, spec["right"], GREEN, "#E8E8EE")]:
             y = 0.75
             for i, ln in enumerate(lines):
                 if i == 0:
-                    fig.text(x0, y, ln, color=headcol, fontsize=32, fontweight="bold", va="center")
+                    fig.text(x0, y, ln, color=headcol, fontsize=32, fontweight="bold",
+                             va="center", fontfamily=HEAD)
                 elif ln:
-                    fig.text(x0, y, ln, color=bodycol, fontsize=24, va="center")
+                    fig.text(x0, y, ln, color=bodycol, fontsize=23, va="center", fontfamily=MONO)
                 y -= 0.083
 
     _footer(fig)
@@ -318,12 +330,20 @@ def tts(text, out_path):
     out_path.write_bytes(resp.content)
 
 
-def make_clip(slide_png, audio_mp3, out_mp4):
+def _with_breaks(text, dur=0.35):
+    """Insert short ElevenLabs pauses between sentences for a calmer, less rushed read."""
+    parts = re.split(r"(?<=[.!?]) +", text.strip())
+    return (f' <break time="{dur}s" /> ').join(parts)
+
+
+def make_clip(slide_png, audio_mp3, out_mp4, tail_silence=0.7):
+    # apad adds trailing silence so segments don't butt up against each other (breathing room).
     subprocess.run(
         [FFMPEG, "-y", "-loop", "1", "-i", str(slide_png), "-i", str(audio_mp3),
          "-c:v", "libx264", "-tune", "stillimage", "-r", "25",
          "-c:a", "aac", "-b:a", "192k", "-pix_fmt", "yuv420p",
-         "-vf", "scale=1920:1080", "-shortest", str(out_mp4)],
+         "-vf", "scale=1920:1080", "-af", f"apad=pad_dur={tail_silence}",
+         "-shortest", str(out_mp4)],
         check=True, capture_output=True,
     )
 
@@ -345,12 +365,16 @@ def main():
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     SLIDE_DIR.mkdir(parents=True, exist_ok=True)
 
-    try:  # ensure the architecture figure (used by a slide) is fresh
+    try:  # light architecture for README + dark figures for the video slides
         from scripts.make_architecture import render as render_arch
 
         render_arch(RESULTS / "architecture.png")
+        if not (RESULTS / "dark" / "sweep_matrix.png").exists():
+            from scripts.make_dark_figures import main as make_dark
+
+            make_dark()
     except Exception as exc:  # noqa: BLE001
-        print(f"  (architecture render skipped: {exc})")
+        print(f"  (figure prep skipped: {exc})")
 
     print("rendering slides…")
     for seg in SEGMENTS:
@@ -364,7 +388,7 @@ def main():
     for seg in SEGMENTS:
         mp3 = AUDIO_DIR / f"seg_{seg['id']}.mp3"
         if not (args.reuse_audio and mp3.exists()):
-            tts(seg["text"], mp3)
+            tts(_with_breaks(seg["text"]), mp3)
         clip = VIDEO / f"clip_{seg['id']}.mp4"
         make_clip(SLIDE_DIR / f"seg_{seg['id']}.png", mp3, clip)
         clips.append(clip)
