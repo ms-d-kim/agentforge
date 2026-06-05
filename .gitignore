@@ -16,9 +16,10 @@ data/fixture/
 # LLM response cache (spec §17 cost mitigation)
 llm_cache.sqlite
 
-# Outputs — keep the dirs, ignore the contents
+# Outputs — keep the dirs, ignore the contents (committed figures live in results/)
 logs/*.jsonl
 plots/*.png
+plots/*.txt
 !logs/.gitkeep
 !plots/.gitkeep
 
