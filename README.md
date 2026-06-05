@@ -1,11 +1,17 @@
 # AgentForge
 
-**A self-improving workflow selector for text-to-SQL.**
+**A learned selection layer for agentic workflows — drop-in self-improvement for any agent's turn.**
 
-AgentForge learns *which* of three fixed SQL-generation workflows to deploy for a given
-text-to-SQL task. An ε-greedy multi-armed bandit improves its selection policy online over
-repeated episodes, using a binary execution-correctness reward on the
-[BIRD-SQL](https://bird-bench.github.io/) benchmark.
+Agents usually hardcode *how* they act each turn. AgentForge makes that choice **learnable**: give it
+a few strategies and a cheap success signal, and an online multi-armed bandit learns which strategy
+wins on your tasks and concentrates selection there — improving across runs. Think of it as a harness
+for choosing your harness's strategy.
+
+Two things live in this repo:
+- **The reusable kernel** — [`WorkflowSelector`](src/selector.py): bring your own strategies + reward
+  signal; it learns online which to use. Domain-agnostic — [jump to the quickstart](#use-it-on-your-own-agent).
+- **The proof** — a text-to-SQL case study on [BIRD-SQL](https://bird-bench.github.io/): an ε-greedy
+  bandit selects among three SQL-generation workflows, rewarded by binary execution-match.
 
 > Stanford CS 153 (Frontier Systems), Spring 2026 · solo project · Track: Automation / Agent Systems.
 
@@ -22,7 +28,47 @@ is usually hardcoded or heuristic. The framing matters:
   (RouteLLM, Martian, Not Diamond) — the distinguishing claim is selecting among multi-step
   *workflows*, not swapping a single model.
 
-## The three workflow arms
+## Use it on your own agent
+
+The selector is domain-agnostic. Install the package and wrap your own strategies:
+
+```bash
+pip install -e .
+```
+
+```python
+from agentforge import WorkflowSelector
+
+selector = WorkflowSelector(
+    arms={"fast": fast_fn, "careful": careful_fn, "use_tools": tool_fn},
+    reward=lambda task, out: 1.0 if passes(out) else 0.0,  # tests / eval / 👍 / exec-match
+    policy="epsilon-greedy",         # or "ucb1"
+    persist="selector_state.json",   # learns across runs, not just one session
+)
+
+result = selector.run(task)          # picks a strategy, runs it, scores it, updates
+print(selector.stats(), "->", selector.best())
+```
+
+Each arm is any `task -> output` callable — a prompt variant, a tool-use pattern, a different model,
+or a whole multi-step workflow. The reward is any `(task, output) -> [0,1]` signal you already have.
+
+**Runnable non-SQL demo** — the same selector learning which *prompting strategy* wins on multi-step
+word problems (no SQL, no BIRD):
+
+```bash
+python -m examples.byo_agent --fake     # offline, deterministic, no API key
+python -m examples.byo_agent            # live via OpenRouter
+```
+```
+direct: 0.33 (n=3)   cot: 1.00 (n=27)   ->  selector learned to prefer: cot
+```
+
+**When it helps** (a lesson from our own BIRD run): use it when your strategies genuinely differ and
+you have a cheap automatic signal — it finds the winner and drops the losers. If they're statistically
+tied, it surfaces that too, so you can cut the complexity. No magic when there's nothing to learn.
+
+## The three workflow arms (the BIRD case study)
 
 All arms share one interface — `run(task, llm) -> WorkflowResult` — so the bandit treats them as
 interchangeable actions:

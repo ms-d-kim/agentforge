@@ -55,17 +55,25 @@ viewer sees: arm selected → SQL generated → executed → reward → bandit m
 > is learning *online* to avoid the weak arm, rather than separating two near-identical ones — and
 > it still lands close to the best fixed policy and the oracle without being told the ranking."
 
-## [3:10–3:50] Use cases + impact (Q3) and what's next (Q4)
+## [3:10–4:10] It's reusable — use it on your own agent (Q3: impact) + what's next (Q4)
 
-> "Why it matters: this is a **learned policy at the workflow-selection layer** — a layer that's
-> normally hardcoded. The closest commercial analogs are LLM routers like RouteLLM, but they swap a
-> single model; AgentForge selects among multi-step *workflows*. Any agent system with a library of
-> strategies could drop this in to stop hand-tuning."
+> "Here's the important part — this isn't SQL-specific. The selector is a domain-agnostic layer: bring
+> your own strategies and any reward signal. To prove it, here's the *same* selector — no SQL, no BIRD
+> — learning which *prompting strategy* wins on multi-step word problems."
 
-> "What I'd add next (Q4): a cost-adjusted reward (accuracy per dollar), a contextual bandit that
-> conditions on task features, and the longer-term vision — making the workflows themselves
-> learnable objects improved from expert demonstrations, with the bandit selecting over the evolving
-> library."
+*Visual:* run `python -m examples.byo_agent` live — it converges to `cot` (1.00) over `direct` (0.33),
+concentrating ~27 of 30 pulls on the winner.
+
+> "That's the whole pitch: `pip install`, wrap your agent's strategies in `WorkflowSelector`, give it
+> a signal — tests passing, an eval score, a thumbs-up — and it self-improves, concentrating on what
+> works and dropping what doesn't, persisting across runs. The closest analogs are LLM routers like
+> RouteLLM, but they swap a single *model*; this selects among multi-step *workflows* or tool-use
+> patterns. Any one-person lab building an agent can drop it in instead of hand-tuning each turn."
+
+> "What I'd add next (Q4): a cost-adjusted reward (accuracy per dollar); a *contextual* bandit that
+> conditions on task features, so it picks per-task instead of on average; and the longer-term vision —
+> making the workflows themselves learnable objects improved from expert demonstrations, with the
+> bandit selecting over the evolving library."
 
 ## [3:50–4:00] Close
 
