@@ -68,6 +68,23 @@ direct: 0.33 (n=3)   cot: 1.00 (n=27)   ->  selector learned to prefer: cot
 you have a cheap automatic signal — it finds the winner and drops the losers. If they're statistically
 tied, it surfaces that too, so you can cut the complexity. No magic when there's nothing to learn.
 
+## How it compares
+
+Agent SDKs let you *write* how an agent acts; some let you *measure* it. **None learns, online, which
+strategy works per task from your own reward, and persists it across runs.** That four-way gap is
+where AgentForge sits. Full sourced analysis: [docs/POSITIONING.md](docs/POSITIONING.md).
+
+| | Online + persists | Policy over multi-step workflows | Your reward signal | SDK |
+|---|:---:|:---:|:---:|:---:|
+| Orchestration SDKs (Google ADK, OpenAI Agents, MS Agent Framework, LangGraph, CrewAI) | ✗ | ✗ | eval/trace only | ✓ |
+| Optimizers (DSPy/GEPA, TextGrad, Trace) | ✗ (offline) | ✗ (one program's prompts/params) | metric | ✓ |
+| Model routers (RouteLLM, Not Diamond, Martian) | ~ (mostly offline) | ✗ (one model, single turn) | preference | ✓ |
+| **ARC** — closest relative (arXiv:2602.11574) | ✗ (offline PPO, frozen) | ✓ | α·correct−cost | ✗ (research) |
+| **AgentForge** | **✓** | **✓** | **your callback** | **✓** |
+
+We're *"ARC, but online, persistent, and productized,"* and **complementary** to DSPy/GEPA
+(offline-optimize each arm, then let AgentForge select among them online).
+
 ## The three workflow arms (the BIRD case study)
 
 All arms share one interface — `run(task, llm) -> WorkflowResult` — so the bandit treats them as
