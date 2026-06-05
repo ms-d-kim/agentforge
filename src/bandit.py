@@ -9,6 +9,7 @@ and logged by the caller.
 """
 from __future__ import annotations
 
+import math
 import random
 
 
@@ -56,4 +57,41 @@ class EpsilonGreedyBandit:
 
     def snapshot(self) -> dict:
         """Copy of current estimates, for JSONL logging."""
+        return {"means": list(self.means), "counts": list(self.counts)}
+
+
+class UCB1Bandit:
+    """UCB1 policy (Auer et al. 2002) — a no-tuning alternative to ε-greedy.
+
+    Same interface as ``EpsilonGreedyBandit`` (select_arm / update / snapshot) so the
+    ``WorkflowSelector`` can swap policies. Picks the arm maximizing
+    ``mean + sqrt(2 ln t / count)``; deterministic exploration via the confidence bonus.
+    """
+
+    def __init__(self, n_arms: int, seed: int = 0):
+        self.n_arms = n_arms
+        self.epsilon = 0.0  # for logging-field compatibility
+        self.means = [0.0] * n_arms
+        self.counts = [0] * n_arms
+        self.rng = random.Random(seed)
+
+    def select_arm(self) -> tuple[int, str]:
+        for i, c in enumerate(self.counts):
+            if c == 0:  # pull each arm once before the UCB rule engages
+                return i, "init"
+        t = sum(self.counts)
+        ucb = [
+            self.means[i] + math.sqrt(2 * math.log(t) / self.counts[i])
+            for i in range(self.n_arms)
+        ]
+        best = max(ucb)
+        candidates = [i for i, u in enumerate(ucb) if u == best]
+        return self.rng.choice(candidates), "ucb"
+
+    def update(self, arm: int, reward: float) -> None:
+        self.counts[arm] += 1
+        n = self.counts[arm]
+        self.means[arm] += (reward - self.means[arm]) / n
+
+    def snapshot(self) -> dict:
         return {"means": list(self.means), "counts": list(self.counts)}

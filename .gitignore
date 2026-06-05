@@ -3,6 +3,11 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+build/
+
+# Selector persistence written by the example
+examples/*state*.json
+selector_state.json
 
 # Secrets — keys via env only (spec §14, CLAUDE.md conventions)
 .env
