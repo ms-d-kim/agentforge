@@ -71,8 +71,14 @@ unavailable.
 Source under `src/`; entrypoints under `scripts/` (run as `python -m scripts.<name>` from repo
 root). Full handoff spec at `docs/agentforge_spec.md`.
 
+Reusable SDK (the generalizable takeaway): `src/selector.py` `WorkflowSelector` — domain-agnostic,
+bring-your-own arms + reward, online learning, persistence, policy=epsilon-greedy|ucb1. Exposed via
+top-level `agentforge/` package (`pip install -e .` → `from agentforge import WorkflowSelector`).
+`examples/byo_agent.py` = runnable non-SQL demo. The BIRD experiment below is one instantiation.
+
 ```
 src/
+  selector.py           # WorkflowSelector SDK (domain-agnostic; the reusable product)
   config.py             # ε, n_episodes, model, paths, STABLE arm names, second-domain stub
   tasks.py              # BIRD loader + Task dataclass
   schema.py             # load / format / filter SQLite schema for prompts
