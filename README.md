@@ -85,6 +85,44 @@ where AgentForge sits. Full sourced analysis: [docs/POSITIONING.md](docs/POSITIO
 We're *"ARC, but online, persistent, and productized,"* and **complementary** to DSPy/GEPA
 (offline-optimize each arm, then let AgentForge select among them online).
 
+## The learning ladder & domains
+
+The same `WorkflowSelector` spans a ladder of policies (swap `policy=`) and four domains —
+demonstrating that the learned selection layer is genuinely domain-agnostic.
+
+**Policies, low → high** (all offline-verified in `tests/`):
+
+| policy | learns | headline result |
+|---|---|---|
+| `epsilon-greedy` / `ucb1` / `thompson` | best arm *on average* | learns the winner in every domain |
+| `linucb` (contextual) | best arm *per task* (featurized context) | **1.00 vs ~0.50** for average-case bandits on context-dependent tasks |
+| `REINFORCE` (multi-step) | a *trajectory* control policy ("iterate-or-stop") | **0.81 vs 0.35** best fixed-horizon, 0.19 random (2.3×) |
+
+**Domains** (each = arms + a reward plugged into the selector):
+
+| domain | arms | reward | best arm learned |
+|---|---|---|---|
+| text-to-SQL (BIRD) | direct / schema-explore / decompose | execution-match | schema_explore |
+| code generation | direct / iterative-repair / decompose | unit tests pass | iterative |
+| agentic search | keyword / iterative / broad→narrow | file match | iterative |
+| context compaction* | truncate / extractive / hierarchical | downstream QA survives | hierarchical |
+
+<sub>*compaction arms adapted from [ee392c-agent-mem](https://github.com/ms-d-kim/ee392c-agent-mem) (Kim & Guernsey); we add the downstream-QA reward it lacked.</sub>
+
+![Cross-domain policy sweep](results/sweep_matrix.png)
+![Multi-step RL: learned policy vs fixed horizons](results/rl_multihop.png)
+
+Everything above runs **offline with a fake LLM** (no API key):
+
+```bash
+python -m examples.code_domain --fake        # or search_domain / compaction_domain / byo_agent
+python -m examples.rl_multihop --plot         # multi-step RL learning curve
+python -m scripts.sweep                       # cross-domain × policy matrix
+```
+
+Adversarial verification of these claims: [docs/VERIFICATION.md](docs/VERIFICATION.md).
+Competitive positioning: [docs/POSITIONING.md](docs/POSITIONING.md).
+
 ## The three workflow arms (the BIRD case study)
 
 All arms share one interface — `run(task, llm) -> WorkflowResult` — so the bandit treats them as
@@ -214,11 +252,14 @@ by `(model, system, prompt, temperature, max_tokens)` in `llm_cache.sqlite`, so 
 the API and logged token counts stay stable. Some residual API non-determinism remains even at
 temperature 0 (documented in the writeup).
 
-## Scope (MVP)
+## Scope: MVP → v2
 
-Deliberately *not* in the MVP: a 4th critic-loop arm, cost-adjusted reward, contextual bandits, a
-second domain (config stub only), and any agent framework (LangGraph/DSPy/LangChain). See
-[`docs/agentforge_spec.md`](docs/agentforge_spec.md) §14 for the full out-of-scope list.
+The **MVP** was deliberately tight — one domain (BIRD-SQL), three fixed arms, an ε-greedy bandit — to
+prove the selection layer cleanly (see [`docs/agentforge_spec.md`](docs/agentforge_spec.md) §14).
+**v2** then extended it into a reusable SDK: the contextual (LinUCB) and multi-step (REINFORCE) rungs,
+three more domains (code / search / compaction), and pip packaging. Still *not* built (future work):
+cost-adjusted reward, a 4th critic-loop arm, learnable workflows, and any heavyweight agent framework —
+AgentForge is the selection layer that sits *above* those.
 
 ## Related work
 

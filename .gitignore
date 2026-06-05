@@ -28,5 +28,8 @@ plots/*.txt
 !logs/.gitkeep
 !plots/.gitkeep
 
+# Demo video working files + output (uploaded separately, not via git)
+video/
+
 # macOS
 .DS_Store

@@ -72,29 +72,26 @@ Source under `src/`; entrypoints under `scripts/` (run as `python -m scripts.<na
 root). Full handoff spec at `docs/agentforge_spec.md`.
 
 Reusable SDK (the generalizable takeaway): `src/selector.py` `WorkflowSelector` — domain-agnostic,
-bring-your-own arms + reward, online learning, persistence, policy=epsilon-greedy|ucb1. Exposed via
-top-level `agentforge/` package (`pip install -e .` → `from agentforge import WorkflowSelector`).
-`examples/byo_agent.py` = runnable non-SQL demo. The BIRD experiment below is one instantiation.
+bring-your-own arms + reward, online learning, persistence. Policy ladder: epsilon-greedy | ucb1 |
+thompson | linucb (contextual) → REINFORCE (multi-step, `src/rl/`). Exposed via top-level
+`agentforge/` package (`pip install -e .` → `from agentforge import WorkflowSelector`). Four domains
+under `src/domains/` (code, search, compaction) + BIRD (`src/workflows/`). Positioning vs other agent
+SDKs in `docs/POSITIONING.md`; adversarial verification in `docs/VERIFICATION.md`.
 
 ```
 src/
   selector.py           # WorkflowSelector SDK (domain-agnostic; the reusable product)
-  config.py             # ε, n_episodes, model, paths, STABLE arm names, second-domain stub
-  tasks.py              # BIRD loader + Task dataclass
-  schema.py             # load / format / filter SQLite schema for prompts
-  llm.py                # Anthropic/OpenAI wrapper + SQLite response cache + FakeLLMClient
-  bandit.py             # ε-greedy policy + per-arm value estimates
-  executor.py           # read-only SQL execution with timeout
-  reward.py             # binary execution-match
-  logger.py             # JSONL episode logging (canonical schema)
-  episode.py            # one episode: select → run → reward → update → log
-  experiment.py         # shared loops: bandit / random / single-arm / oracle
-  metrics.py            # log → series: rolling acc, pull fractions, regret, Wilson CI
-  workflows/            # base.py, prompts.py, direct.py, explore.py, decompose.py
-scripts/                # download_bird, make_fixture, dry_run, smoke_test,
-                        # run_experiment, run_baselines, plot_results
-tests/                  # offline tests (python -m unittest tests.test_pipeline)
-data/  logs/  plots/  docs/
+  bandit.py             # ε-greedy / UCB1 / Thompson policies
+  contextual.py         # LinUCB contextual bandit + default featurizer (per-task selection)
+  rl/                   # multi-step REINFORCE on a multi-hop iterate-or-stop env
+  domains/              # code (tests-pass) / search (file-match) / compaction (downstream-QA)
+  config.py tasks.py schema.py llm.py executor.py reward.py logger.py episode.py experiment.py metrics.py
+  workflows/            # BIRD arms: base, prompts, direct, explore, decompose
+scripts/                # download_bird, make_fixture, dry_run, smoke_test, run_experiment,
+                        # run_baselines, run_real, plot_results, sweep
+examples/               # byo_agent, code_domain, search_domain, compaction_domain, rl_multihop
+tests/                  # offline suite (64 tests): python -m unittest discover -s tests
+data/  logs/  plots/  results/  docs/
 ```
 
 Offline verification (no API key, no BIRD download): `python -m scripts.dry_run` then
