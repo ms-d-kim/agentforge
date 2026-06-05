@@ -27,29 +27,33 @@ Structure follows the CS 153 rubric's required Q1–Q4. `{{...}}` = fill from yo
 viewer sees: arm selected → SQL generated → executed → reward → bandit means updated → JSONL line.
 
 > "Everything is plain Python — no agent framework. Provider is OpenRouter; model is
-> `{{MODEL e.g. openai/gpt-4o-mini}}`. Temperature 0, seeded RNG, and every LLM response is cached
-> so runs are reproducible and cheap."
+> `openai/gpt-4o-mini` — deliberately mid-tier, so workflow *strategy* still matters. Temperature 0,
+> seeded RNG, and every LLM response is cached, so runs are reproducible and cheap (~$1)."
 
 ## [1:50–3:10] Does it work? (Q3 framing via evidence — the headline)
 
-> "Here's the learning curve, averaged over {{N_SEEDS}} seeds."
+> "Here's the learning curve, averaged over 3 seeds, 60 episodes each, on a balanced 60-task pool
+> spanning four BIRD databases and all three difficulty levels."
 
-*Visual:* `plots/exp_01_cumulative_reward.png`.
+*Visual:* `results/exp_01_cumulative_reward.png`.
 
-> "The bandit (blue) climbs toward the oracle and beats the random baseline and the single-arm
-> baselines. The smoke test confirmed the arms are genuinely differentiated — per-workflow accuracy
-> was {{direct%}} / {{explore%}} / {{decompose%}} — so there's something real to learn."
+> "The bandit (blue) climbs toward the oracle, clearly beats the random baseline, and sits just
+> under the best single workflow. Per-workflow accuracy is 35% direct / 40% schema-explore /
+> 28% decompose — so the arms are genuinely differentiated and there's something real to learn."
 
-*Visual:* `plots/exp_02_arm_fractions.png` and `plots/exp_04_arm_means.png`.
+*Visual:* `results/exp_02_arm_fractions.png` and `results/exp_04_arm_means.png`.
 
-> "Selection mass shifts toward the best arm over time, and the per-arm value estimates separate.
-> Cumulative regret against the oracle grows **sub-linearly** — the signature of a learning bandit."
+> "Selection mass shifts off the weak `decompose` arm — from a third of pulls down to about 13% —
+> and onto the two strong workflows, while the per-arm value estimates separate. Cumulative regret
+> against the oracle grows **sub-linearly** — the signature of a learning bandit."
 
-*Visual:* `plots/exp_03_cumulative_regret.png` + the per-arm summary table (Wilson CIs).
+*Visual:* `results/exp_03_cumulative_regret.png` + the per-arm summary table (Wilson CIs).
 
-> "Honest limitations: BIRD's gold SQL has documented label noise, 60 episodes is a short horizon
-> so the curves are noisy, and {{the best single arm is strong — the bandit's job is to *find* it
-> without knowing it in advance}}."
+> "Honest limitations: BIRD's gold SQL has documented label noise; 60 episodes is a short horizon,
+> so the curves are noisy; and here the two strongest arms — direct and schema-explore — are
+> statistically tied (0.39 vs 0.41, overlapping confidence intervals). So the bandit's decisive win
+> is learning *online* to avoid the weak arm, rather than separating two near-identical ones — and
+> it still lands close to the best fixed policy and the oracle without being told the ranking."
 
 ## [3:10–3:50] Use cases + impact (Q3) and what's next (Q4)
 

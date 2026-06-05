@@ -64,33 +64,56 @@ oracle and beating random + every single-arm baseline.
 ## Run the real experiment
 
 ```bash
-# 1. Data — downloads + unpacks the BIRD dev set into data/bird/ (several GB)
+# 1. Data — download + unpack the BIRD dev set into data/bird/ (~346 MB zip)
 python -m scripts.download_bird
 
-# 2. Smoke test (spec gate): confirm the arms are actually differentiated
-python -m scripts.smoke_test --n 20
+# 2. Provider — copy .env.example to .env and add your key:
+#      AGENTFORGE_PROVIDER=openrouter
+#      OPENROUTER_API_KEY=sk-or-...
+#      AGENTFORGE_OPENROUTER_MODEL=openai/gpt-4o-mini
 
-# 3. Main bandit runs across seeds
-python -m scripts.run_experiment --seeds 0,1,2 --n-episodes 60
+# 3. Smoke test (spec §11.1 gate): confirm the arms are differentiated
+python -m scripts.smoke_test --provider openrouter --n 20
 
-# 4. Baselines: random, three single-arm, oracle (same task ordering per seed)
-python -m scripts.run_baselines --seeds 0,1,2 --n-episodes 60
+# 4. Bandit + baselines + oracle across seeds (balanced pool, shared cache)
+python -m scripts.run_real --n-episodes 60 --seeds 0,1,2 --prefix exp
 
 # 5. The four evaluation plots + per-arm summary table
 python -m scripts.plot_results --prefix exp
 ```
 
-For the first runs, restrict to a few databases to keep runtime small:
-`run_experiment --db-subset california_schools,financial --limit 200`.
+`run_real` builds a difficulty/database-balanced task pool and warms the cache oracle-first. A
+provider-agnostic path also exists via `scripts.run_experiment` + `scripts.run_baselines` (see
+`--help`). Temperature 0 + the SQLite response cache make re-runs deterministic and free.
 
-## Evidence the demo shows
+## Results
 
-1. **Cumulative reward over episodes** — the learning curve (bandit vs random vs single-arm vs oracle).
-2. **Arm pull frequency over time** — selection mass shifting toward the best arm.
+Model `openai/gpt-4o-mini` via OpenRouter · 60 episodes × 3 seeds · BIRD dev
+(california_schools, financial, formula_1, superhero). The mid-tier model is deliberate — it
+leaves headroom for *workflow strategy* to matter; a frontier model solves nearly everything and
+collapses the selection signal.
+
+| | |
+|---|---|
+| ![Cumulative reward](results/exp_01_cumulative_reward.png) | ![Arm pull fractions](results/exp_02_arm_fractions.png) |
+| ![Cumulative regret](results/exp_03_cumulative_regret.png) | ![Per-arm running means](results/exp_04_arm_means.png) |
+
+**Takeaway:** across 3 seeds × 60 episodes, the bandit shifts selection mass off the harmful
+`decompose` arm (from ~33% at forced-init down to ~13% of pulls) and onto the two effective
+workflows (`direct` + `schema_explore`, ~87% combined). Cumulative reward reaches **22.3** —
+above **random (20.3)** and **always-decompose (17.0)**, competitive with the best single arm
+**always-schema_explore (24.0)**, and approaching the post-hoc **oracle (27.0)**. Honest caveat:
+on this distribution `direct` (0.39) and `schema_explore` (0.41) are statistically tied
+(overlapping Wilson CIs), so the headroom over "always pick the best arm" is small — the decisive
+win is learning *online* to avoid the weak arm without being told the ranking up front; regret
+grows sub-linearly. Per-arm pulls / success rates / Wilson CIs in
+[`results/exp_summary.txt`](results/exp_summary.txt).
+
+What each plot shows:
+1. **Cumulative reward** — bandit vs random vs single-arm vs oracle (mean ± std across seeds).
+2. **Arm pull frequency over time** — selection mass shifting toward the better arms.
 3. **Cumulative regret vs. oracle** — sub-linear growth ⇒ the bandit is learning.
-4. **Per-arm running mean reward** — what the bandit "thinks" of each arm.
-
-Plus a per-arm summary table with Wilson-score confidence intervals.
+4. **Per-arm running mean reward** — the bandit's value estimates separating.
 
 ## Repository layout
 
