@@ -151,6 +151,46 @@ SEGMENTS = [
               "means a human edits prompts between runs. They optimize inside a fixed strategy, or "
               "just measure it. AgentForge optimizes over a portfolio of strategies and routes to "
               "winners online. That axis is unoccupied."),
+    dict(id="7c", slide=dict(kind="bullets", title="The pain — and what it costs", bullets=[
+            "You're shipping an LLM agent. You have several ways to do the task.",
+            "You guess, freeze one workflow, and hope it generalizes.",
+            "It underperforms → a human reads traces and hand-edits prompts. Forever.",
+            "You overpay (heavy workflow everywhere) or underperform (the cheap one).",
+            "Eval dashboards tell you it's broken. None of them fix it.",
+         ]),
+         text="So who is actually hurting? You are, if you're shipping an LLM agent. You have "
+              "several ways to do the task, you guess, you freeze one, and you hope it generalizes. "
+              "When it underperforms, a human reads traces and hand-edits prompts, forever. You're "
+              "either overpaying by running the heavy workflow everywhere, or underperforming with "
+              "the cheap one — and you never actually know which is best. Eval dashboards tell you "
+              "it's broken. None of them fix it. That's a real, expensive, recurring pain."),
+    dict(id="7d", slide=dict(kind="bullets", title="Who it's for", bullets=[
+            "Teams running LLM agents in production,",
+            "…with 2+ strategies and any automatic success signal:",
+            "coding → tests pass        ·    text-to-SQL → execution match",
+            "search → found the answer  ·    support bots → resolved",
+            "Strategies that differ + a reward you already log = your ICP.",
+         ]),
+         text="Who is it for? Teams running LLM agents in production who have more than one strategy "
+              "and any automatic signal of success. Coding agents scored by tests. Text-to-SQL "
+              "scored by execution. Search scored by whether you found the answer. Support bots "
+              "scored by resolution. If your strategies genuinely differ and you already log a "
+              "reward, you are the ideal customer — and our own results tell you exactly when it "
+              "pays off, and honestly, when it won't."),
+    dict(id="7e", slide=dict(kind="bullets", title="Why now — and how it ships", bullets=[
+            "The agent stack just commoditized orchestration: ADK, LangGraph, CrewAI.",
+            "The missing layer is learning WHICH strategy to run. That's the wedge.",
+            "Ships like dev tools win: open-source, 10-line drop-in, no lock-in.",
+            "Commercial layer: a hosted control plane — routing, dashboards, policies.",
+            "A value metric you can sell: accuracy per dollar.",
+         ]),
+         text="Why now? The agent stack just commoditized orchestration — everyone can build an "
+              "agent with ADK, LangGraph, or CrewAI. The missing layer is learning which strategy to "
+              "actually run, and that is the wedge. It ships the way developer tools win: "
+              "open-source, a ten-line drop-in, no lock-in — it sits on top of the SDK you already "
+              "use. The commercial layer is a hosted control plane: cost-aware routing — accuracy "
+              "per dollar — plus dashboards, shared policies, and a library of proven workflows. "
+              "Cheap when the simple strategy suffices, strong when it doesn't."),
     dict(id="08", slide=dict(kind="bullets", title="Verified, and ready to use", bullets=[
             "64 offline tests · real BIRD results · cross-domain sweep",
             "Multi-agent adversarial verification re-runs and refutes each claim",

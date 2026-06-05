@@ -25,6 +25,25 @@ its own arms + reward into the same loop, and the policy is swappable along a la
 ε-greedy → UCB1 → Thompson → contextual LinUCB → multi-step REINFORCE. (Regenerate:
 `python -m scripts.make_architecture`.)
 
+## Who it's for (and the painpoint)
+
+**The pain.** You're shipping an LLM agent and you have several ways to do a task. You guess, freeze one
+workflow, and hope it generalizes. When it underperforms, a human reads traces and hand-edits prompts —
+forever. You overpay (heavy workflow everywhere) or underperform (the cheap one), and never *know* which
+is best. Eval tools tell you it's broken; none of them fix it.
+
+**Who it's for (ICP).** Teams running LLM agents in production with **2+ strategies and an automatic
+success signal** — coding agents (tests pass), text-to-SQL / analytics (execution match), RAG / search
+(found the answer), support bots (resolved). If your strategies genuinely differ and you already log a
+reward, AgentForge is for you — and our own results tell you honestly when it *won't* help (tied arms,
+or no signal).
+
+**Why now / the wedge.** The agent stack just commoditized orchestration (ADK, LangGraph, CrewAI); the
+missing layer is learning *which* strategy to run. AgentForge ships the way dev tools win — open-source,
+a 10-line drop-in, no lock-in, sitting *on top* of the SDK you already use. The natural commercial layer
+is a hosted control plane: **cost-aware routing (accuracy per dollar)**, dashboards, shared policies, and
+a library of proven workflows.
+
 ## What's the contribution?
 
 A **learned policy at the workflow-selection layer** of an agent system — a layer where selection
