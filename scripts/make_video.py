@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -23,6 +24,9 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.lines import Line2D  # noqa: E402
+from matplotlib.offsetbox import AnchoredOffsetbox, HPacker, TextArea, VPacker  # noqa: E402
+from matplotlib.patches import Circle, FancyBboxPatch, Rectangle  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
@@ -36,12 +40,15 @@ RESULTS = REPO / "results"
 VOICE_ID = os.environ.get("ELEVENLABS_VOICE_ID", "XrExE9yKIg1WjnnlVkGX")  # Matilda — professional
 TTS_MODEL = "eleven_multilingual_v2"
 
-# --- theme ----------------------------------------------------------------- #
-BG = "#0B1F3A"      # navy
-FG = "#F2F6FC"      # near-white
-ACCENT = "#4DA3FF"  # blue
-MUTED = "#9DB2CE"   # gray-blue
-W, H = 19.2, 10.8   # 1920x1080 at dpi=100
+# --- theme (black, terminal / product aesthetic) --------------------------- #
+BG = "#0A0A0B"       # near-black
+FG = "#FFFFFF"       # headings
+MUTED = "#8A8A93"    # body / captions
+GREEN = "#2BE06B"    # terminal-green accent
+MAGENTA = "#FF3DA6"  # pink accent
+PANEL = "#141417"    # code panel
+BORDER = "#2A2A30"   # hairline borders
+W, H = 19.2, 10.8    # 1920x1080 at dpi=100
 
 
 # --------------------------------------------------------------------------- #
@@ -179,9 +186,60 @@ def _new_fig():
     return fig
 
 
+_KW = {"from", "import", "def", "return", "lambda", "class", "for", "in",
+       "if", "else", "with", "as", "None", "True", "False"}
+
+
+def _tokenize_code(line):
+    """[(text, color)] spans for light syntax highlighting (monospace)."""
+    spans, code, comment = [], line, ""
+    h = line.find("#")
+    if h != -1:
+        code, comment = line[:h], line[h:]
+    for m in re.finditer(r'"[^"]*"|\'[^\']*\'|[A-Za-z_][A-Za-z0-9_]*|\s+|[^\sA-Za-z0-9_]', code):
+        t = m.group(0)
+        if t[:1] in ('"', "'"):
+            spans.append((t, GREEN))
+        elif t in _KW:
+            spans.append((t, MAGENTA))
+        elif t[:1].isalpha() or t[:1] == "_":
+            spans.append((t, "#E8E8EE"))
+        elif t.isspace():
+            spans.append((t, FG))
+        else:
+            spans.append((t, "#B7B7C0"))
+    if comment:
+        spans.append((comment, "#6E6E78"))
+    return spans or [(" ", FG)]
+
+
 def _footer(fig):
-    fig.text(0.04, 0.045, "AgentForge — a self-improving agent SDK", color=MUTED, fontsize=15)
-    fig.text(0.96, 0.045, "CS 153 · Frontier Systems", color=MUTED, fontsize=15, ha="right")
+    fig.add_artist(Circle((0.073, 0.052), 0.006, transform=fig.transFigure, color=GREEN, zorder=5))
+    fig.text(0.086, 0.05, "AgentForge — a self-improving agent SDK", color=MUTED, fontsize=14, va="center")
+    fig.text(0.927, 0.05, "CS 153 · Frontier Systems", color=MUTED, fontsize=14, ha="right", va="center")
+
+
+def _render_code(fig, spec):
+    fig.text(0.5, 0.90, spec["title"], color=FG, fontsize=40, ha="center", va="center", fontweight="bold")
+    ax = fig.add_axes([0.135, 0.135, 0.73, 0.65])
+    ax.axis("off")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.add_patch(FancyBboxPatch((0, 0), 1, 1, boxstyle="round,pad=0,rounding_size=0.025",
+                 transform=ax.transAxes, facecolor=PANEL, edgecolor=BORDER, lw=1.5, zorder=0))
+    barh = 0.135
+    ax.add_patch(Rectangle((0, 1 - barh), 1, barh, transform=ax.transAxes, facecolor="#1A1A1F",
+                 edgecolor="none", zorder=1))
+    for i, c in enumerate(["#FF5F56", "#FFBD2E", "#27C93F"]):
+        ax.add_patch(Circle((0.028 + i * 0.024, 1 - barh / 2), 0.0075, transform=ax.transAxes, color=c, zorder=2))
+    ax.text(0.5, 1 - barh / 2, "selector.py", color=MUTED, fontsize=14, family="monospace",
+            ha="center", va="center", transform=ax.transAxes, zorder=2)
+    rows = [HPacker(children=[TextArea(t, textprops=dict(color=c, fontfamily="monospace", fontsize=20))
+                              for t, c in _tokenize_code(ln)], align="baseline", pad=0, sep=0)
+            for ln in spec["code"].split("\n")]
+    box = VPacker(children=rows, align="left", pad=0, sep=8)
+    ax.add_artist(AnchoredOffsetbox(loc="upper left", child=box, pad=0, borderpad=0,
+                  bbox_to_anchor=(0.05, 1 - barh - 0.06), bbox_transform=ax.transAxes, frameon=False))
 
 
 def render_slide(spec, path):
@@ -189,47 +247,49 @@ def render_slide(spec, path):
     kind = spec["kind"]
 
     if kind == "title":
-        fig.text(0.5, 0.60, spec["title"], color=FG, fontsize=70, ha="center", va="center", fontweight="bold")
-        fig.text(0.5, 0.46, spec.get("subtitle", ""), color=ACCENT, fontsize=40, ha="center", va="center")
+        fig.text(0.5, 0.595, spec["title"], color=FG, fontsize=88, ha="center", va="center", fontweight="bold")
+        fig.text(0.5, 0.47, spec.get("subtitle", ""), color=GREEN, fontsize=40, ha="center", va="center")
+        fig.add_artist(Line2D([0.45, 0.55], [0.40, 0.40], color=GREEN, lw=2.5, transform=fig.transFigure))
         if spec.get("foot"):
-            fig.text(0.5, 0.30, spec["foot"], color=MUTED, fontsize=24, ha="center", va="center")
+            fig.text(0.5, 0.33, spec["foot"], color=MUTED, fontsize=23, ha="center", va="center", family="monospace")
 
     elif kind == "bullets":
-        fig.text(0.07, 0.86, spec["title"], color=ACCENT, fontsize=46, fontweight="bold", va="center")
-        y = 0.70
+        fig.add_artist(Line2D([0.072, 0.072], [0.27, 0.80], color=GREEN, lw=4, transform=fig.transFigure))
+        fig.text(0.105, 0.845, spec["title"], color=FG, fontsize=48, fontweight="bold", va="center")
+        y = 0.665
         for b in spec["bullets"]:
-            fig.text(0.09, y, ("•  " + b) if b else "", color=FG, fontsize=30, va="center")
-            y -= 0.115
+            if b:
+                fig.text(0.105, y, "▸", color=GREEN, fontsize=25, va="center")
+                fig.text(0.132, y, b, color="#D7D7DD", fontsize=30, va="center")
+            y -= 0.108
 
     elif kind == "code":
-        fig.text(0.07, 0.88, spec["title"], color=ACCENT, fontsize=44, fontweight="bold", va="center")
-        ax = fig.add_axes([0.09, 0.16, 0.82, 0.60])
-        ax.axis("off")
-        ax.add_patch(plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes, facecolor="#0A1830",
-                                   edgecolor=ACCENT, lw=1.5))
-        ax.text(0.04, 0.92, spec["code"], color="#E6EDF7", fontsize=23, family="monospace",
-                va="top", ha="left", transform=ax.transAxes)
+        _render_code(fig, spec)
 
     elif kind == "figure":
-        fig.text(0.5, 0.92, spec["title"], color=ACCENT, fontsize=42, fontweight="bold", ha="center", va="center")
-        img = plt.imread(spec["image"])
-        ax = fig.add_axes([0.10, 0.16, 0.80, 0.68])
-        ax.imshow(img)
+        fig.text(0.5, 0.915, spec["title"], color=FG, fontsize=40, fontweight="bold", ha="center", va="center")
+        fig.add_artist(FancyBboxPatch((0.095, 0.15), 0.81, 0.665,
+                       boxstyle="round,pad=0,rounding_size=0.012", transform=fig.transFigure,
+                       facecolor="white", edgecolor=BORDER, lw=1.5, zorder=0.5))
+        ax = fig.add_axes([0.12, 0.175, 0.76, 0.615], zorder=1)
         ax.axis("off")
+        ax.patch.set_visible(False)
+        ax.imshow(plt.imread(spec["image"]))
         if spec.get("caption"):
-            fig.text(0.5, 0.10, spec["caption"], color=MUTED, fontsize=24, ha="center", va="center")
+            fig.text(0.5, 0.10, spec["caption"], color=MUTED, fontsize=22, ha="center", va="center")
 
     elif kind == "compare":
-        fig.text(0.5, 0.90, spec["title"], color=ACCENT, fontsize=46, fontweight="bold", ha="center", va="center")
-        for x0, lines, col in [(0.07, spec["left"], MUTED), (0.55, spec["right"], FG)]:
-            y = 0.76
+        fig.text(0.5, 0.90, spec["title"], color=FG, fontsize=48, fontweight="bold", ha="center", va="center")
+        fig.add_artist(Line2D([0.5, 0.5], [0.13, 0.80], color=BORDER, lw=2, transform=fig.transFigure))
+        for x0, lines, headcol, bodycol in [(0.08, spec["left"], MUTED, "#A7A7B0"),
+                                            (0.55, spec["right"], GREEN, "#E8E8EE")]:
+            y = 0.75
             for i, ln in enumerate(lines):
-                fs = 30 if i == 0 else 24
-                fw = "bold" if i == 0 else "normal"
-                c = ACCENT if i == 0 else col
-                fig.text(x0, y, ln, color=c, fontsize=fs, fontweight=fw, va="center")
-                y -= 0.085
-        fig.add_artist(plt.Line2D([0.51, 0.51], [0.12, 0.80], color="#28406A", lw=2))
+                if i == 0:
+                    fig.text(x0, y, ln, color=headcol, fontsize=32, fontweight="bold", va="center")
+                elif ln:
+                    fig.text(x0, y, ln, color=bodycol, fontsize=24, va="center")
+                y -= 0.083
 
     _footer(fig)
     fig.savefig(path, facecolor=BG)
