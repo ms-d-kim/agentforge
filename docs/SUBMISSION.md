@@ -50,7 +50,7 @@ Real BIRD-SQL run (needs an OpenRouter key + the BIRD dev download):
 - **Execution & Technical Work** — the SDK + 4 domains + policy ladder + RL; 67 offline tests; real BIRD run.
 - **Evaluation & Evidence** — 4 figures + Wilson CIs + reproducible results from the committed logs.
 - **Communication & Presentation** — narrated video + README that renders the figures.
-- **Process, Integrity & Disclosure** — prior-work credit
+- **Process, Integrity & Disclosure** — AI-use disclosure (README), prior-work credit
   ([ee392c-agent-mem](https://github.com/ms-d-kim/ee392c-agent-mem)), public commit history, and the
   honest-caveats below.
 
