@@ -38,5 +38,15 @@ results/dark/
 # Variable-font instancing source (static weights are committed; this isn't needed at runtime)
 assets/fonts/SpaceGrotesk-VF.ttf
 
+# LaTeX paper — source (main.tex, .bib, figures/, vendored IEEEtran.*) is tracked;
+# build artifacts and the generated Overleaf zip are not.
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/main.pdf
+agentforge_overleaf.zip
+
 # macOS
 .DS_Store

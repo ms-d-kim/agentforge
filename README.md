@@ -306,3 +306,12 @@ AgentForge is the selection layer that sits *above* those.
 ## Related work
 
 AFlow, DSPy, Voyager, Reflexion, Self-Refine, DIN-SQL, DAIL-SQL, RouteLLM.
+
+## AI-use disclosure
+
+Per course policy: this repository was implemented with substantial assistance from **Claude Code**
+(Anthropic). Claude Code scaffolded the module structure, wrote the workflow / bandit / executor /
+reward / logging / plotting code and tests from the project specification (`docs/agentforge_spec.md`),
+and generated the synthetic fixture and offline verification harness. The project design, the
+specification, and all framing decisions are the author's. AI-generated code was reviewed and
+verified by the author (offline test suite + dry-run before any API spend).
