@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Secrets — keys via env only (spec §14, CLAUDE.md conventions)
+.env
+
+# Data: large BIRD download + generated fixtures (gitignored)
+data/bird/
+data/fixture/
+*.sqlite
+*.sqlite3
+
+# LLM response cache (spec §17 cost mitigation)
+llm_cache.sqlite
+
+# Outputs — keep the dirs, ignore the contents
+logs/*.jsonl
+plots/*.png
+!logs/.gitkeep
+!plots/.gitkeep
+
+# macOS
+.DS_Store

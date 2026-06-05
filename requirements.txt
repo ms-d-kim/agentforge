@@ -1,0 +1,10 @@
+# AgentForge MVP — pinned-ish deps. Plain Python, no agent framework (spec §4, §14).
+anthropic>=0.40,<1.0
+openai>=1.40,<2.0          # optional second provider; llm.py supports either, never mixed in one run
+matplotlib>=3.7
+numpy>=1.24
+requests>=2.31
+tqdm>=4.66
+python-dotenv>=1.0      # load OPENROUTER_API_KEY etc. from .env
+# Optional: HuggingFace loader fallback for BIRD questions-only (see scripts/download_bird.py)
+# datasets>=2.18
