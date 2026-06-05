@@ -1,0 +1,57 @@
+{
+  "episodes": 60,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "policies": [
+    "epsilon-greedy",
+    "ucb1",
+    "thompson"
+  ],
+  "matrix": {
+    "code": {
+      "epsilon-greedy": {
+        "final_mean": 0.9333333333333333,
+        "final_std": 0.04714045207910316
+      },
+      "ucb1": {
+        "final_mean": 0.8333333333333334,
+        "final_std": 0.04714045207910316
+      },
+      "thompson": {
+        "final_mean": 1.0,
+        "final_std": 0.0
+      }
+    },
+    "search": {
+      "epsilon-greedy": {
+        "final_mean": 0.8666666666666667,
+        "final_std": 0.04714045207910316
+      },
+      "ucb1": {
+        "final_mean": 0.8666666666666667,
+        "final_std": 0.062360956446232324
+      },
+      "thompson": {
+        "final_mean": 0.85,
+        "final_std": 0.07071067811865477
+      }
+    },
+    "compaction": {
+      "epsilon-greedy": {
+        "final_mean": 0.6333333333333333,
+        "final_std": 0.24944382578492943
+      },
+      "ucb1": {
+        "final_mean": 0.5333333333333333,
+        "final_std": 0.20548046676563256
+      },
+      "thompson": {
+        "final_mean": 0.6666666666666666,
+        "final_std": 0.20548046676563256
+      }
+    }
+  }
+}
