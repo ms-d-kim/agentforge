@@ -15,6 +15,16 @@ Two things live in this repo:
 
 > Stanford CS 153 (Frontier Systems), Spring 2026 · solo project · Track: Automation / Agent Systems.
 
+## Architecture
+
+![AgentForge architecture](results/architecture.png)
+
+A task enters; the `WorkflowSelector`'s policy picks a strategy (arm); the strategy runs; a reward
+function scores the output; the policy updates **online** and **persists** to disk. Each domain plugs
+its own arms + reward into the same loop, and the policy is swappable along a ladder —
+ε-greedy → UCB1 → Thompson → contextual LinUCB → multi-step REINFORCE. (Regenerate:
+`python -m scripts.make_architecture`.)
+
 ## What's the contribution?
 
 A **learned policy at the workflow-selection layer** of an agent system — a layer where selection

@@ -101,6 +101,13 @@ SEGMENTS = [
               "signal you already have: tests passing, an eval score, a thumbs-up. An online "
               "multi-armed bandit learns which strategy wins on your tasks, concentrates on it, and "
               "keeps improving across runs. It's a harness for choosing your harness's strategy."),
+    dict(id="3b", slide=dict(kind="figure", title="Architecture — one self-improving loop",
+         image=str(RESULTS / "architecture.png"),
+         caption="select → run → reward → update (online) → persist · every domain plugs in arms + reward"),
+         text="Here's the architecture. A task comes in, the selector's policy picks a strategy, "
+              "that strategy runs and produces an output, and a reward function scores it. The "
+              "reward updates the policy, online, and persists to disk. That's the whole "
+              "self-improving loop. Every domain just plugs in its own strategies and its own reward."),
     dict(id="04", slide=dict(kind="figure", title="How it works — proven on text-to-SQL",
          image=str(RESULTS / "exp_01_cumulative_reward.png"),
          caption="BIRD-SQL · gpt-4o-mini · the bandit beats random and approaches the oracle"),
@@ -271,10 +278,19 @@ def concat(clips, out_mp4):
 def main():
     ap = argparse.ArgumentParser(description="Build the AgentForge demo video.")
     ap.add_argument("--slides-only", action="store_true", help="render slides; skip TTS + ffmpeg")
+    ap.add_argument("--reuse-audio", action="store_true",
+                    help="skip TTS for segments whose mp3 already exists (only new/changed segments)")
     args = ap.parse_args()
 
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     SLIDE_DIR.mkdir(parents=True, exist_ok=True)
+
+    try:  # ensure the architecture figure (used by a slide) is fresh
+        from scripts.make_architecture import render as render_arch
+
+        render_arch(RESULTS / "architecture.png")
+    except Exception as exc:  # noqa: BLE001
+        print(f"  (architecture render skipped: {exc})")
 
     print("rendering slides…")
     for seg in SEGMENTS:
@@ -287,7 +303,8 @@ def main():
     clips = []
     for seg in SEGMENTS:
         mp3 = AUDIO_DIR / f"seg_{seg['id']}.mp3"
-        tts(seg["text"], mp3)
+        if not (args.reuse_audio and mp3.exists()):
+            tts(seg["text"], mp3)
         clip = VIDEO / f"clip_{seg['id']}.mp4"
         make_clip(SLIDE_DIR / f"seg_{seg['id']}.png", mp3, clip)
         clips.append(clip)
