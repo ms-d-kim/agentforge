@@ -31,7 +31,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Optional
 
-from .bandit import EpsilonGreedyBandit, UCB1Bandit
+from .bandit import EpsilonGreedyBandit, ThompsonBandit, UCB1Bandit
+
+_PROBE = "agentforge probe task"  # used once to learn the feature dimension for linucb
 
 
 @dataclass
@@ -41,12 +43,22 @@ class SelectorResult:
     reward: Optional[float] = None
 
 
-def _make_policy(policy: str, n: int, epsilon: float, seed: int, forced_init: bool):
+def _make_policy(policy: str, n: int, epsilon: float, seed: int, forced_init: bool, dim=None):
     if policy == "epsilon-greedy":
         return EpsilonGreedyBandit(n, epsilon=epsilon, seed=seed, forced_init=forced_init)
     if policy == "ucb1":
         return UCB1Bandit(n, seed=seed)
-    raise ValueError(f"unknown policy: {policy!r} (expected 'epsilon-greedy' or 'ucb1')")
+    if policy == "thompson":
+        return ThompsonBandit(n, seed=seed)
+    if policy == "linucb":
+        from .contextual import LinUCBBandit
+
+        if dim is None:
+            raise ValueError("linucb requires a feature dimension")
+        return LinUCBBandit(n, dim=dim, seed=seed)
+    raise ValueError(
+        f"unknown policy: {policy!r} (expected epsilon-greedy | ucb1 | thompson | linucb)"
+    )
 
 
 class WorkflowSelector:
@@ -62,6 +74,8 @@ class WorkflowSelector:
         seed: int = 0,
         forced_init: bool = True,
         persist: Optional[str] = None,
+        featurize: Optional[Callable[[Any], list]] = None,
+        feature_dim: Optional[int] = None,
     ):
         if not arms:
             raise ValueError("WorkflowSelector needs at least one arm")
@@ -70,23 +84,41 @@ class WorkflowSelector:
         self.reward_fn = reward
         self.policy_name = policy
         self.persist = Path(persist) if persist else None
-        self._bandit = _make_policy(policy, len(self.names), epsilon, seed, forced_init)
+        self.featurize = featurize
+
+        dim = None
+        if policy == "linucb":
+            if self.featurize is None:  # default: hashed bag-of-words context
+                from .contextual import default_featurize
+
+                self.featurize = default_featurize
+            dim = feature_dim if feature_dim is not None else len(self.featurize(_PROBE))
+
+        self._bandit = _make_policy(policy, len(self.names), epsilon, seed, forced_init, dim)
         self.history: list[tuple[str, float]] = []
         self._last_idx: Optional[int] = None
+        self._last_context = None
         if self.persist and self.persist.exists():
             self.load()
 
     # -- core API ----------------------------------------------------------- #
-    def select(self) -> str:
-        """Pick a strategy name (without running it). Use when you'll run it yourself."""
-        idx, _reason = self._bandit.select_arm()
+    def select(self, task: Any = None) -> str:
+        """Pick a strategy name (without running it). Use when you'll run it yourself.
+
+        For the contextual policy, pass ``task`` so it can featurize the context;
+        then call ``update`` for that same task before selecting again.
+        """
+        context = self.featurize(task) if (self.featurize and task is not None) else None
+        self._last_context = context
+        idx, _reason = self._bandit.select_arm(context)
         self._last_idx = idx
         return self.names[idx]
 
     def update(self, arm: str, reward: float) -> None:
-        """Record the reward for a strategy and improve the policy."""
+        """Record the reward for a strategy and improve the policy (using the
+        context from the most recent ``select``)."""
         idx = self.names.index(arm)
-        self._bandit.update(idx, float(reward))
+        self._bandit.update(idx, float(reward), self._last_context)
         self.history.append((arm, float(reward)))
         if self.persist:
             self.save()
@@ -94,7 +126,7 @@ class WorkflowSelector:
     def run(self, task: Any) -> SelectorResult:
         """Select a strategy, run it on ``task``, and (if a reward fn was given)
         score + update automatically. Returns the arm, its output, and reward."""
-        name = self.select()
+        name = self.select(task)
         output = self.arms[name](task)
         reward = None
         if self.reward_fn is not None:

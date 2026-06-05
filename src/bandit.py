@@ -29,12 +29,13 @@ class EpsilonGreedyBandit:
         self.counts = [0] * n_arms
         self.rng = random.Random(seed)
 
-    def select_arm(self) -> tuple[int, str]:
+    def select_arm(self, context=None) -> tuple[int, str]:
         """Return ``(arm_index, reason)`` where reason is one of
         ``"forced"`` | ``"explore"`` | ``"exploit"``.
 
-        With ``forced_init`` on, each arm is pulled once (in index order) before
-        the epsilon-greedy rule engages, so no arm is judged on a mean of 0.
+        ``context`` is accepted (and ignored) for a uniform policy interface with
+        the contextual bandit. With ``forced_init`` on, each arm is pulled once (in
+        index order) before the epsilon-greedy rule engages.
         """
         if self.forced_init:
             for i, c in enumerate(self.counts):
@@ -49,7 +50,7 @@ class EpsilonGreedyBandit:
         candidates = [i for i, m in enumerate(self.means) if m == max_val]
         return self.rng.choice(candidates), "exploit"
 
-    def update(self, arm: int, reward: float) -> None:
+    def update(self, arm: int, reward: float, context=None) -> None:
         """Incremental running-mean update for the pulled arm."""
         self.counts[arm] += 1
         n = self.counts[arm]
@@ -75,7 +76,7 @@ class UCB1Bandit:
         self.counts = [0] * n_arms
         self.rng = random.Random(seed)
 
-    def select_arm(self) -> tuple[int, str]:
+    def select_arm(self, context=None) -> tuple[int, str]:
         for i, c in enumerate(self.counts):
             if c == 0:  # pull each arm once before the UCB rule engages
                 return i, "init"
@@ -88,10 +89,51 @@ class UCB1Bandit:
         candidates = [i for i, u in enumerate(ucb) if u == best]
         return self.rng.choice(candidates), "ucb"
 
-    def update(self, arm: int, reward: float) -> None:
+    def update(self, arm: int, reward: float, context=None) -> None:
         self.counts[arm] += 1
         n = self.counts[arm]
         self.means[arm] += (reward - self.means[arm]) / n
 
     def snapshot(self) -> dict:
         return {"means": list(self.means), "counts": list(self.counts)}
+
+
+class ThompsonBandit:
+    """Thompson sampling with a Beta-Bernoulli posterior per arm.
+
+    For each arm, maintains Beta(α, β) (uniform prior α=β=1); samples a success
+    probability per arm and pulls the argmax. Rewards in [0,1] update the posterior
+    fractionally (α += r, β += 1−r) — the standard Bernoulli extension. No tuning
+    knob (unlike ε), and typically lower regret than ε-greedy.
+    """
+
+    def __init__(self, n_arms: int, seed: int = 0):
+        self.n_arms = n_arms
+        self.epsilon = 0.0  # logging-field compatibility
+        self.alpha = [1.0] * n_arms
+        self.beta = [1.0] * n_arms
+        self.counts = [0] * n_arms
+        self.means = [0.0] * n_arms
+        self.rng = random.Random(seed)
+
+    def select_arm(self, context=None) -> tuple[int, str]:
+        samples = [self.rng.betavariate(self.alpha[i], self.beta[i]) for i in range(self.n_arms)]
+        best = max(samples)
+        candidates = [i for i, s in enumerate(samples) if s == best]
+        return self.rng.choice(candidates), "thompson"
+
+    def update(self, arm: int, reward: float, context=None) -> None:
+        r = max(0.0, min(1.0, float(reward)))
+        self.alpha[arm] += r
+        self.beta[arm] += 1.0 - r
+        self.counts[arm] += 1
+        n = self.counts[arm]
+        self.means[arm] += (reward - self.means[arm]) / n
+
+    def snapshot(self) -> dict:
+        return {
+            "means": list(self.means),
+            "counts": list(self.counts),
+            "alpha": list(self.alpha),
+            "beta": list(self.beta),
+        }

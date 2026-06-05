@@ -62,7 +62,7 @@ class TestWorkflowSelector(unittest.TestCase):
 
     def test_unknown_policy_raises(self):
         with self.assertRaises(ValueError):
-            WorkflowSelector(ARMS, reward=REWARD, policy="thompson")
+            WorkflowSelector(ARMS, reward=REWARD, policy="nonexistent-policy")
 
 
 if __name__ == "__main__":
