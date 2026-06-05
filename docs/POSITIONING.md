@@ -108,6 +108,6 @@ DSPy/GEPA: github.com/stanfordnlp/dspy · arXiv:2507.19457. TextGrad: arXiv:2406
 Trace/OptoPrime: arXiv:2406.16218 · microsoft.github.io/Trace.
 RouteLLM: arXiv:2406.18665. PILOT: arXiv:2508.21141. ParetoBandit (online model routing): arXiv:2604.00136.
 ARC: arXiv:2602.11574 · github.com/somsagar07/Context_Optimization.
-Bandits+LLMs survey: arXiv:2505.13355. AFlow: arXiv:2410.10762. Agent Lightning: arXiv:2507.19457.
+Bandits+LLMs survey: arXiv:2505.13355. AFlow: arXiv:2410.10762. Agent Lightning: arXiv:2508.03680.
 Letta/MemGPT: github.com/letta-ai/letta. Reflexion: arXiv:2303.11366. Voyager: arXiv:2305.16291.
 AutoGen AgentOptimizer: arXiv:2402.11359.

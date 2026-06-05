@@ -23,15 +23,15 @@ are QUALIFIED, not unqualified HOLDs.** Honest small-sample / weak-baseline / sy
 
 | Claim | Verdict | Confidence | Reproduced numbers |
 |---|---|---|---|
-| `workflow-selector-three-domains` | HOLD | high | seed 0 (60 ep): code best=iterative (95%), search best=iterative (77%), compaction best=hierarchical (75%). Over 20 seeds: code 0.931 / search 0.857 / compaction 0.693 mean acc — all beat the 1/3 baseline. `best()` picks the claimed winner: code 100%, search 85%, compaction 95% of seeds. 31/31 domain tests pass. |
+| `workflow-selector-three-domains` | QUALIFIED | high | seed 0 (60 ep): code best=iterative (95%), search best=iterative (77%), compaction best=hierarchical (75%). Over 20 seeds: code 0.931 / search 0.857 / compaction 0.693 mean acc — all beat the 1/3 baseline. `best()` picks the claimed winner: code 100%, search 85%, compaction 95% of seeds. 31/31 domain tests pass. |
 | `contextual-linucb-beats-average-case` | HOLD | high | tail acc (last 100 of 300, 10 seeds): LinUCB = 1.000 on all seeds; thompson 0.503 (0.420–0.570); ucb1/eps-greedy ~0.39–0.59. Best fixed arm caps ~0.503 (50/50 split). |
 | `rl_multihop_reinforce` | HOLD | high | 5000 ep, seed 0: REINFORCE 0.81 vs best fixed-horizon 0.35 vs random 0.19 (+0.46, 2.3×). Cross-seed RL 0.80–0.85; provable fixed cap = maxₖ P(depth=k) = 1/3. 4/4 tests pass. |
-| `bird_sql_bandit_real_run` | HOLD | high | 3 seeds × 60 ep (gpt-4o-mini/OpenRouter): bandit 22.33, random 20.33, always-schema_explore 24.00, always-decompose 17.00, oracle 27.00 — match README. Per-arm: direct 0.391, schema_explore 0.406, decompose 0.208. |
-| `cross-domain-sweep` | HOLD | high | 60 ep, seeds 0,1,2, **byte-identical** to committed `results/sweep.json`: best policy per domain code 1.00 / search 0.867 / compaction 0.667 — all ≫ 0.33. Robust across seed sets 5–7 and 10–14. |
+| `bird_sql_bandit_real_run` | QUALIFIED | high | 3 seeds × 60 ep (gpt-4o-mini/OpenRouter): bandit 22.33, random 20.33, always-schema_explore 24.00, always-decompose 17.00, oracle 27.00 — match README. Per-arm: direct 0.391, schema_explore 0.406, decompose 0.208. |
+| `cross-domain-sweep` | QUALIFIED | high | 60 ep, seeds 0,1,2, **byte-identical** to committed `results/sweep.json`: best policy per domain code 1.00 / search 0.867 / compaction 0.667 — all ≫ 0.33. Robust across seed sets 5–7 and 10–14. |
 
 ## Per-claim findings
 
-**`workflow-selector-three-domains` — HOLD (high).** All three `--fake --episodes 60` examples print the
+**`workflow-selector-three-domains` — QUALIFIED (high).** All three `--fake --episodes 60` examples print the
 claimed best arm with pulls concentrated there. The offline fakes were read and confirmed **honest**: the
 code reward runs the real subprocess executor (10/10 reference impls pass, 10/10 buggy fail) and the fake
 routes by *prompt step*, not arm identity; the search reward is real grep-vs-gold with file choices
@@ -59,7 +59,7 @@ baseline. **Limitation:** "~0.81" is the seed-0 point; honest cross-seed range i
 capped at 1/3" statement is exactly correct for the fixed-horizon family (a stronger signal-greedy heuristic
 reaches 0.73, which REINFORCE still beats).
 
-**`bird_sql_bandit_real_run` — HOLD (high).** Every README Results number was recomputed from
+**`bird_sql_bandit_real_run` — QUALIFIED (high).** Every README Results number was recomputed from
 `logs/exp_*.jsonl` with the repo's own `src/metrics.py` and reproduced. Adversarial re-execution of
 `compute_reward` on 40 sampled logged (generated_sql, gold_sql) pairs against the real BIRD SQLite DBs found
 **0 mismatches** — rewards are genuine execution-match, not fabricated. Gold SQL is never passed to the LLM;
@@ -69,7 +69,7 @@ bandit (21) *loses* to random (23). With 3 seeds and a ~2-point margin there is 
 over random, and the README correctly claims none; the durable result is learning online to down-weight the
 weak decompose arm (true in all 3 seeds). The two top arms are statistically tied (overlapping Wilson CIs).
 
-**`cross-domain-sweep` — HOLD (high).** A canonical re-run regenerated `results/sweep.json`
+**`cross-domain-sweep` — QUALIFIED (high).** A canonical re-run regenerated `results/sweep.json`
 byte-identically. Best policy per domain (code 1.00 / search 0.867 / compaction 0.667) sits far above 1/3;
 robust across seed sets 5–7 and 10–14. All three domains compute real rewards. **Limitation:** the literal
 "1/3 random baseline" is a *weak* bar — the true uniform-over-arms baseline is higher (0.70/0.82/0.53). The

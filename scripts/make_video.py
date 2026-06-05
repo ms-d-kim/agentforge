@@ -192,12 +192,12 @@ SEGMENTS = [
               "per dollar — plus dashboards, shared policies, and a library of proven workflows. "
               "Cheap when the simple strategy suffices, strong when it doesn't."),
     dict(id="08", slide=dict(kind="bullets", title="Verified, and ready to use", bullets=[
-            "64 offline tests · real BIRD results · cross-domain sweep",
+            "67 offline tests · real BIRD results · cross-domain sweep",
             "Multi-agent adversarial verification re-runs and refutes each claim",
             "pip install -e .  →  from agentforge import WorkflowSelector",
             "Closest research (ARC) is offline; we are online, persistent, packaged",
          ]),
-         text="And we don't just claim it. Sixty-four offline tests, real benchmark results, and a "
+         text="And we don't just claim it. Sixty-seven offline tests, real benchmark results, and a "
               "multi-agent adversarial verification pass that re-runs every result and tries to "
               "refute it. To use it: pip install, wrap your strategies, plug in a reward, ten lines. "
               "The closest research work, ARC, does this offline. We do it online, persistent, and "
@@ -215,7 +215,7 @@ SEGMENTS = [
     dict(id="10", slide=dict(kind="title", title="Don't hand-pick your agent's workflow.",
          subtitle="Let it learn.", foot="github.com/ms-d-kim/agentforge", title_fs=54),
          text="AgentForge. Don't hand-pick your agent's workflow. Let it learn. The code is open "
-              "source. Thank you."),
+              "source — and, as disclosed in the README, it was built with Claude Code. Thank you."),
 ]
 
 

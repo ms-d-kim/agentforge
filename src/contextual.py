@@ -77,4 +77,18 @@ class LinUCBBandit:
         self.means[arm] += (reward - self.means[arm]) / n
 
     def snapshot(self) -> dict:
-        return {"means": list(self.means), "counts": list(self.counts)}
+        # Include the per-arm A matrices and b vectors so the CONTEXTUAL policy
+        # genuinely survives a save/load (means/counts alone do not capture it).
+        return {
+            "means": list(self.means),
+            "counts": list(self.counts),
+            "A": [a.tolist() for a in self.A],
+            "b": [bv.tolist() for bv in self.b],
+        }
+
+    def restore(self, state: dict) -> None:
+        self.means = list(state["means"])
+        self.counts = list(state["counts"])
+        if "A" in state and "b" in state:
+            self.A = [self._np.array(a, dtype=float) for a in state["A"]]
+            self.b = [self._np.array(bv, dtype=float) for bv in state["b"]]

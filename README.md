@@ -90,7 +90,7 @@ python -m examples.byo_agent --fake     # offline, deterministic, no API key
 python -m examples.byo_agent            # live via OpenRouter
 ```
 ```
-direct: 0.33 (n=3)   cot: 1.00 (n=27)   ->  selector learned to prefer: cot
+direct: 0.00 (n=2)   cot: 1.00 (n=28)   ->  selector learned to prefer: cot
 ```
 
 **When it helps** (a lesson from our own BIRD run): use it when your strategies genuinely differ and
@@ -197,7 +197,7 @@ the arms deliberately differentiated so the bandit has something to learn:
 ```bash
 python -m scripts.dry_run                      # writes logs/dry_*.jsonl
 python -m scripts.plot_results --prefix dry     # writes plots/dry_*.png + summary
-python -m unittest tests.test_pipeline          # 17 offline tests
+python -m unittest tests.test_pipeline          # 18 offline tests
 ```
 
 Expected: the bandit converges on `schema_explore` (the designed-best arm), tracking just under the
@@ -247,14 +247,15 @@ above **random (20.3)** and **always-decompose (17.0)**, competitive with the be
 **always-schema_explore (24.0)**, and approaching the post-hoc **oracle (27.0)**. Honest caveat:
 on this distribution `direct` (0.39) and `schema_explore` (0.41) are statistically tied
 (overlapping Wilson CIs), so the headroom over "always pick the best arm" is small — the decisive
-win is learning *online* to avoid the weak arm without being told the ranking up front; regret
-grows sub-linearly. Per-arm pulls / success rates / Wilson CIs in
-[`results/exp_summary.txt`](results/exp_summary.txt).
+win is learning *online* to avoid the weak arm without being told the ranking up front; cumulative
+regret stays small (≈5 over 60 episodes — too short a horizon to establish a sub-linear *rate*).
+Per-arm pulls / success rates / Wilson CIs in [`results/exp_summary.txt`](results/exp_summary.txt).
 
 What each plot shows:
 1. **Cumulative reward** — bandit vs random vs single-arm vs oracle (mean ± std across seeds).
 2. **Arm pull frequency over time** — selection mass shifting toward the better arms.
-3. **Cumulative regret vs. oracle** — sub-linear growth ⇒ the bandit is learning.
+3. **Cumulative regret vs. oracle** — stays small (≈5 over 60 ep); 60 episodes is too short to
+   establish a sub-linear *rate*, but the bandit tracks close to the oracle.
 4. **Per-arm running mean reward** — the bandit's value estimates separating.
 
 ## Repository layout

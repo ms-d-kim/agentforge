@@ -26,8 +26,13 @@ def _norm_cell(value: object) -> object:
     """
     if value is None:
         return None
-    if isinstance(value, float):
-        return f"{round(value, FLOAT_ROUND)}"
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, (int, float)):
+        # Normalize by numeric value so 1 == 1.0 (an int gold vs a REAL-typed
+        # candidate must not false-mismatch); round non-integers to FLOAT_ROUND.
+        f = float(value)
+        return str(int(f)) if f.is_integer() else f"{round(f, FLOAT_ROUND)}"
     return str(value)
 
 

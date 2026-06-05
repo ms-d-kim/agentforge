@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentforge"
-version = "0.1.0"
+version = "0.3.0"
 description = "A learned selection layer for agentic workflows: an online bandit picks which strategy to run each turn, with a pluggable reward signal."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -14,12 +14,13 @@ dependencies = [
     "anthropic>=0.40",
     "openai>=1.40",
     "matplotlib>=3.7",
+    "numpy>=1.24",         # core: LinUCB contextual bandit + REINFORCE
     "requests>=2.31",
     "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
-dev = ["numpy>=1.24", "tqdm>=4.66"]
+dev = ["tqdm>=4.66"]
 
 [project.urls]
 Repository = "https://github.com/ms-d-kim/agentforge"
@@ -27,4 +28,7 @@ Repository = "https://github.com/ms-d-kim/agentforge"
 # The reusable kernel is exposed as the `agentforge` package; `src` holds the
 # implementation + the BIRD experiment. (Future cleanup: rename src -> agentforge.)
 [tool.setuptools]
-packages = ["agentforge", "src", "src.workflows"]
+packages = [
+    "agentforge", "src", "src.workflows", "src.rl",
+    "src.domains", "src.domains.code", "src.domains.search", "src.domains.compaction",
+]

@@ -150,15 +150,13 @@ class WorkflowSelector:
     def save(self) -> None:
         if not self.persist:
             return
-        snap = self._bandit.snapshot()
         self.persist.parent.mkdir(parents=True, exist_ok=True)
         self.persist.write_text(
             json.dumps(
                 {
                     "policy": self.policy_name,
                     "names": self.names,
-                    "means": snap["means"],
-                    "counts": snap["counts"],
+                    "state": self._bandit.snapshot(),  # FULL policy state (incl. LinUCB A/b, Thompson α/β)
                     "updates": len(self.history),
                 },
                 indent=2,
@@ -166,9 +164,11 @@ class WorkflowSelector:
         )
 
     def load(self) -> None:
-        """Restore arm estimates from disk. If the arm set changed, start fresh."""
+        """Restore the full policy state from disk. If the arm set changed, start fresh."""
         data = json.loads(self.persist.read_text())
         if data.get("names") != self.names:
             return
-        self._bandit.means = list(data["means"])
-        self._bandit.counts = list(data["counts"])
+        state = data.get("state")
+        if state is None:  # back-compat with the old flat {means,counts} format
+            state = {"means": data.get("means", []), "counts": data.get("counts", [])}
+        self._bandit.restore(state)

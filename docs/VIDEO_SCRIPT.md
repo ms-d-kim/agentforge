@@ -45,7 +45,8 @@ viewer sees: arm selected → SQL generated → executed → reward → bandit m
 
 > "Selection mass shifts off the weak `decompose` arm — from a third of pulls down to about 13% —
 > and onto the two strong workflows, while the per-arm value estimates separate. Cumulative regret
-> against the oracle grows **sub-linearly** — the signature of a learning bandit."
+> against the oracle stays small — the bandit tracks close to the oracle (60 episodes is too short to
+> claim a sub-linear *rate*)."
 
 *Visual:* `results/exp_03_cumulative_regret.png` + the per-arm summary table (Wilson CIs).
 

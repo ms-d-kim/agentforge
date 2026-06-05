@@ -57,8 +57,13 @@ class EpsilonGreedyBandit:
         self.means[arm] += (reward - self.means[arm]) / n
 
     def snapshot(self) -> dict:
-        """Copy of current estimates, for JSONL logging."""
+        """Copy of current estimates, for JSONL logging + persistence."""
         return {"means": list(self.means), "counts": list(self.counts)}
+
+    def restore(self, state: dict) -> None:
+        """Restore full policy state from a snapshot (means/counts are complete here)."""
+        self.means = list(state["means"])
+        self.counts = list(state["counts"])
 
 
 class UCB1Bandit:
@@ -96,6 +101,10 @@ class UCB1Bandit:
 
     def snapshot(self) -> dict:
         return {"means": list(self.means), "counts": list(self.counts)}
+
+    def restore(self, state: dict) -> None:
+        self.means = list(state["means"])
+        self.counts = list(state["counts"])
 
 
 class ThompsonBandit:
@@ -137,3 +146,9 @@ class ThompsonBandit:
             "alpha": list(self.alpha),
             "beta": list(self.beta),
         }
+
+    def restore(self, state: dict) -> None:
+        self.means = list(state["means"])
+        self.counts = list(state["counts"])
+        self.alpha = list(state.get("alpha", self.alpha))
+        self.beta = list(state.get("beta", self.beta))

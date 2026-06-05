@@ -90,7 +90,7 @@ src/
 scripts/                # download_bird, make_fixture, dry_run, smoke_test, run_experiment,
                         # run_baselines, run_real, plot_results, sweep
 examples/               # byo_agent, code_domain, search_domain, compaction_domain, rl_multihop
-tests/                  # offline suite (64 tests): python -m unittest discover -s tests
+tests/                  # offline suite (67 tests): python -m unittest discover -s tests
 data/  logs/  plots/  results/  docs/
 ```
 
@@ -132,7 +132,13 @@ The demo must show the system **learning to pick better workflows over time**.
 
 The single most important project principle. Do **not** expand the MVP mid-stream. When a new
 idea appears mid-task, default to *cite in related work or leave a stub*, not *absorb
-architecturally*. Explicitly deferred / out of scope:
+architecturally*.
+
+> **Note (v2):** the MVP shipped clean, and v2 then *deliberately* extended it — contextual (LinUCB)
+> + multi-step RL (REINFORCE) + three more domains (code/search/compaction) are now built. The list
+> below is the original MVP scope discipline; see README "Scope: MVP → v2" for what's since shipped.
+
+Explicitly deferred / out of scope (as of the MVP):
 
 - **4th "iterative refinement / critic loop" arm** — possible later arm, not a separate product
   layer, not in MVP.
