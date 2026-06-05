@@ -10,8 +10,12 @@ text-to-SQL experiment in this repo (`src/`, `scripts/`) is one instantiation.
 """
 from src.bandit import EpsilonGreedyBandit, ThompsonBandit, UCB1Bandit
 from src.contextual import LinUCBBandit, default_featurize
+from src.rl import REINFORCE, MultiHopEnv
 from src.selector import SelectorResult, WorkflowSelector
 
+# The learning ladder, low → high: a one-step bandit picks a whole workflow
+# (EpsilonGreedy/UCB1/Thompson), a contextual bandit picks per task (LinUCB), and
+# REINFORCE learns a multi-step control policy (when to keep going vs. commit).
 __all__ = [
     "WorkflowSelector",
     "SelectorResult",
@@ -20,5 +24,7 @@ __all__ = [
     "ThompsonBandit",
     "LinUCBBandit",
     "default_featurize",
+    "REINFORCE",
+    "MultiHopEnv",
 ]
-__version__ = "0.2.0"
+__version__ = "0.3.0"
