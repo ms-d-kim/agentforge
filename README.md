@@ -15,6 +15,8 @@ Two things live in this repo:
 
 > Stanford CS 153 (Frontier Systems), Spring 2026 · solo project · Track: Automation / Agent Systems.
 
+🎥 **[Demo video](video/agentforge_demo.mp4)** (≈6 min, narrated) · 📦 **[Submission index](docs/SUBMISSION.md)** · ✅ **[Adversarial review](docs/ADVERSARIAL_REVIEW.md)**
+
 ## Architecture
 
 ![AgentForge architecture](results/architecture.png)
