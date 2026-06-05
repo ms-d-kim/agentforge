@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="220" viewBox="0 0 820 220" role="img" aria-label="AgentForge logo">
+  <defs>
+    <linearGradient id="af-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12181a"/>
+      <stop offset="1" stop-color="#0a0f0d"/>
+    </linearGradient>
+    <linearGradient id="af-green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#45f28b"/>
+      <stop offset="1" stop-color="#19b965"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(28 30)">
+    <rect x="0" y="0" width="160" height="160" rx="36" fill="url(#af-bg)" stroke="#2fd677" stroke-width="5"/>
+    <path d="M42 118 L80 38 L118 118" fill="none" stroke="url(#af-green)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M59 84 H101" fill="none" stroke="#eaf7ef" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="80" cy="38" r="8" fill="#eaf7ef"/>
+    <circle cx="42" cy="118" r="8" fill="#2fd677"/>
+    <circle cx="118" cy="118" r="8" fill="#2fd677"/>
+    <path d="M121 40 L139 28 M128 55 L150 54 M121 70 L139 82" stroke="#45f28b" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <text x="220" y="99" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="62" font-weight="700" fill="#f4f8f6">AgentForge</text>
+  <text x="224" y="145" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="27" font-weight="600" fill="#2fd677">self-improving workflow selector</text>
+</svg>
