@@ -80,10 +80,17 @@ class TestRewardAndExecutor(FixtureMixin):
         self.assertEqual(r, 0)
 
     def test_order_insensitive(self):
-        t = self.by_id["4"]  # names in grade 12
+        t = self.by_id["4"]  # names in grade 12; gold has NO ORDER BY
         shuffled = t.gold_sql + " ORDER BY name DESC"
         r, _ = compute_reward(shuffled, t.gold_sql, t.db_path)
-        self.assertEqual(r, 1)
+        self.assertEqual(r, 1)  # gold unordered -> order-insensitive
+
+    def test_order_sensitive_when_gold_has_order_by(self):
+        t = self.by_id["4"]
+        gold = "SELECT name FROM students ORDER BY name ASC"
+        wrong_order = "SELECT name FROM students ORDER BY name DESC"
+        self.assertEqual(compute_reward(wrong_order, gold, t.db_path)[0], 0)  # order matters
+        self.assertEqual(compute_reward(gold, gold, t.db_path)[0], 1)
 
     def test_syntax_error_is_zero_not_crash(self):
         t = self.by_id["1"]

@@ -80,9 +80,10 @@ tied, it surfaces that too, so you can cut the complexity. No magic when there's
 
 ## How it compares
 
-Agent SDKs let you *write* how an agent acts; some let you *measure* it. **None learns, online, which
-strategy works per task from your own reward, and persists it across runs.** That four-way gap is
-where AgentForge sits. Full sourced analysis: [docs/POSITIONING.md](docs/POSITIONING.md).
+Agent SDKs let you *write* how an agent acts; some let you *measure* it. But — to our knowledge
+(June 2026) — **none learns, online, which strategy works per task from your own reward, and persists
+it across runs.** That four-way gap is where AgentForge sits. Full sourced analysis (with caveats):
+[docs/POSITIONING.md](docs/POSITIONING.md).
 
 | | Online + persists | Policy over multi-step workflows | Your reward signal | SDK |
 |---|:---:|:---:|:---:|:---:|
@@ -130,8 +131,19 @@ python -m examples.rl_multihop --plot         # multi-step RL learning curve
 python -m scripts.sweep                       # cross-domain × policy matrix
 ```
 
-Adversarial verification of these claims: [docs/VERIFICATION.md](docs/VERIFICATION.md).
-Competitive positioning: [docs/POSITIONING.md](docs/POSITIONING.md).
+> **What the offline demos are (and aren't).** The `--fake` runs are *controlled
+> demonstrations*: the fake LLM is scripted to make the arms differ the way real strategies
+> plausibly would (iterative-repair recovers buggy drafts, etc.). Rewards are always computed
+> from each arm's *actual output* (real subprocess execution, real grep, real fact-retention) —
+> never hardcoded by arm name — but the fakes *do* have scripted access to reference/gold answers
+> by design. So these show the selector **mechanics** work; they are **not** evidence that the
+> SDK will discover strategy quality in an arbitrary real domain. The real-reward result is the
+> BIRD-SQL run below. Also note the code domain's executor is a **toy harness, not a security
+> sandbox** (see its module docstring) — don't run untrusted code through it.
+
+Adversarial verification of these claims: [docs/VERIFICATION.md](docs/VERIFICATION.md) (author-run)
+and [docs/CODEX_AUDIT.md](docs/CODEX_AUDIT.md) (independent). Competitive positioning:
+[docs/POSITIONING.md](docs/POSITIONING.md).
 
 ## The three workflow arms (the BIRD case study)
 

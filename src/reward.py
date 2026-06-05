@@ -1,14 +1,20 @@
 """Binary execution-match reward (spec §9).
 
-Reward 1 iff the generated SQL's result set equals the gold SQL's result set,
-compared order-insensitively as a set of row tuples. Any error or timeout on the
-generated side yields reward 0. NULLs and floats are normalized before comparison
-so cosmetic differences don't cause false mismatches.
+Reward 1 iff the generated SQL's result set equals the gold SQL's. Comparison is
+order-insensitive (set of row tuples) UNLESS the gold query has an ``ORDER BY``, in
+which case row order is significant and we compare the rows as an ordered list (so a
+right-rows/wrong-order answer to an ordered question is not over-credited). Any error
+or timeout on the generated side yields reward 0. NULLs and floats are normalized so
+cosmetic differences don't cause false mismatches.
 """
 from __future__ import annotations
 
+import re
+
 from .config import EXEC_TIMEOUT_S, FLOAT_ROUND
 from .executor import execute_sql
+
+_ORDER_BY = re.compile(r"\border\s+by\b", re.IGNORECASE)
 
 
 def _norm_cell(value: object) -> object:
@@ -25,9 +31,18 @@ def _norm_cell(value: object) -> object:
     return str(value)
 
 
+def _norm_row(row) -> tuple:
+    return tuple(_norm_cell(c) for c in row)
+
+
 def normalize_rows(rows: list[tuple]) -> set:
     """Order-insensitive, type-normalized set of row tuples."""
-    return {tuple(_norm_cell(c) for c in row) for row in rows}
+    return {_norm_row(row) for row in rows}
+
+
+def _ordered_rows(rows: list[tuple]) -> list:
+    """Order-sensitive, type-normalized list of row tuples (for ORDER BY golds)."""
+    return [_norm_row(row) for row in rows]
 
 
 def compute_reward(
@@ -50,6 +65,8 @@ def compute_reward(
     except Exception as exc:  # noqa: BLE001
         return 0, f"gold_exec_error: {exc}"
 
-    if normalize_rows(gen_rows) == normalize_rows(gold_rows):
-        return 1, None
-    return 0, None
+    if _ORDER_BY.search(gold_sql or ""):
+        match = _ordered_rows(gen_rows) == _ordered_rows(gold_rows)  # order significant
+    else:
+        match = normalize_rows(gen_rows) == normalize_rows(gold_rows)  # order-insensitive
+    return (1, None) if match else (0, None)

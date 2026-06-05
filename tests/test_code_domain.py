@@ -37,22 +37,23 @@ class TestExecutor(unittest.TestCase):
         self.assertFalse(passed)
         self.assertTrue(out)  # a non-empty failure message
 
-    def test_blocks_forbidden_pattern(self):
-        # Even though this code would "work", the deny-list must reject it.
+    def test_tripwire_rejects_obvious_pattern(self):
+        # The tripwire is a convenience filter (NOT a security boundary): it rejects
+        # the obvious cases. Real protection is the isolated, resource-limited child.
         passed, out = execute_python(
             "import os\ndef cwd():\n    return os.getcwd()\n",
             "assert isinstance(cwd(), str)\n",
         )
         self.assertFalse(passed)
-        self.assertIn("forbidden", out)
+        self.assertIn("tripwire", out)
 
-    def test_blocks_open_call(self):
+    def test_tripwire_rejects_open_call(self):
         passed, out = execute_python(
             "def leak():\n    return open('/etc/passwd').read()\n",
             "assert leak()\n",
         )
         self.assertFalse(passed)
-        self.assertIn("forbidden", out)
+        self.assertIn("tripwire", out)
 
     def test_empty_code_not_passed(self):
         passed, _out = execute_python("", "assert True\n")

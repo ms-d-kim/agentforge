@@ -8,8 +8,18 @@ verdicts. Five independent verifiers + one synthesizer. This file is their repor
 > read the implementations for rigging/leakage, and tried to **refute** the claim; a synthesizer
 > combined the verdicts. The goal was to *break* the results, not confirm them.
 
-**Summary: 5/5 claims HOLD (all high confidence); 0 QUALIFIED, 0 REFUTED.** Each holds as worded, but
-several carry honest small-sample / weak-baseline caveats documented below.
+> **⚠️ Corrected by an independent audit.** A separate, independent audit ([docs/CODEX_AUDIT.md](CODEX_AUDIT.md))
+> graded the repo **B-** and rightly found this report **too self-serving**: (1) the empirical numbers
+> reproduce, but several claims are better called **QUALIFIED** than "HOLD" (the BIRD bandit-vs-random
+> win is a 3-seed mean and *loses* in seed 0; the contextual/RL results are synthetic-task demos); (2) it
+> missed a real **P0 security bug** — the code-domain executor is **not** a sandbox (a one-line
+> `getattr(__builtins__,'open')` bypass reads arbitrary files); and (3) "no gold leakage" is too broad —
+> the *rewards* are computed from real outputs, but the **fake LLMs have scripted access to gold/reference
+> answers by design**. The executor has since been relabeled (toy harness, not a sandbox) and the docs
+> corrected. Treat the verdicts below as **HOLDS/QUALIFIED**, not an unqualified pass.
+
+**Summary (as originally written): 5/5 reproduce empirically — but per the independent audit, several
+are QUALIFIED, not unqualified HOLDs.** Honest small-sample / weak-baseline / synthetic-task caveats below.
 
 | Claim | Verdict | Confidence | Reproduced numbers |
 |---|---|---|---|
@@ -77,7 +87,13 @@ the best arm and beat the uniform-arm baseline (clearest in compaction: ~0.63–
 - **Two synthetic tasks are honest stand-ins, not real workloads.** `contextual-linucb` (typed arms) and
   `rl_multihop` (depth/signal env) are designed tasks — stress-tested to rule out leakage, but illustrative.
 - **The 1/3 random baseline is a soft bar** for the domain sweeps (true uniform-arm baseline 0.70/0.82/0.53).
-- **No rigging, gold-leakage, fabricated results, or unfair baselines were found in any claim.** By-design
-  differentiation in the offline fakes is acceptable because every reward is computed from the arm's actual
+- **Rewards are real; the fakes are scripted (clarified).** Every reward is computed from the arm's *actual*
   output (real subprocess / grep / fact-retention), never hardcoded by arm name, and the policies see only
-  scalar rewards.
+  scalar rewards. **But** — correcting this report's original over-broad "no gold leakage" — the **fake LLMs
+  do have scripted access to reference/gold answers by design** (e.g. the code fake's repair step returns the
+  reference impl; the search fake returns a gold file from a table). That's acceptable for deterministic toy
+  demos, but it means the offline results show *mechanics*, not that the SDK discovers strategy quality in
+  arbitrary domains.
+- **Security (added by the independent audit):** the code-domain executor is a **toy harness, not a sandbox** —
+  a `getattr(__builtins__,'open')` call bypasses its tripwire and reads files. It has been relabeled and given
+  best-effort (OS-dependent) resource limits, but **untrusted code must not be run through it.**
