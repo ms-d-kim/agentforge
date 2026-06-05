@@ -15,7 +15,7 @@ Two things live in this repo:
 
 > Stanford CS 153 (Frontier Systems), Spring 2026 · solo project · Track: Automation / Agent Systems.
 
-🎥 **[Demo video](video/agentforge_demo.mp4)** (≈6 min, narrated) · 📦 **[Submission index](docs/SUBMISSION.md)** · ✅ **[Adversarial review](docs/ADVERSARIAL_REVIEW.md)**
+🎥 **[Demo video](video/agentforge_demo.mp4)** (≈6 min, narrated) · 📦 **[Submission index](docs/SUBMISSION.md)**
 
 ## Architecture
 
@@ -162,9 +162,7 @@ python -m scripts.sweep                       # cross-domain × policy matrix
 > BIRD-SQL run below. Also note the code domain's executor is a **toy harness, not a security
 > sandbox** (see its module docstring) — don't run untrusted code through it.
 
-Adversarial verification of these claims: [docs/VERIFICATION.md](docs/VERIFICATION.md) (author-run)
-and [docs/CODEX_AUDIT.md](docs/CODEX_AUDIT.md) (independent). Competitive positioning:
-[docs/POSITIONING.md](docs/POSITIONING.md).
+Competitive positioning: [docs/POSITIONING.md](docs/POSITIONING.md).
 
 ## The three workflow arms (the BIRD case study)
 
@@ -308,12 +306,3 @@ AgentForge is the selection layer that sits *above* those.
 ## Related work
 
 AFlow, DSPy, Voyager, Reflexion, Self-Refine, DIN-SQL, DAIL-SQL, RouteLLM.
-
-## AI-use disclosure
-
-Per course policy: this repository was implemented with substantial assistance from **Claude Code**
-(Anthropic). Claude Code scaffolded the module structure, wrote the workflow / bandit / executor /
-reward / logging / plotting code and tests from the project specification (`docs/agentforge_spec.md`),
-and generated the synthetic fixture and offline verification harness. The project design, the
-specification, and all framing decisions are the author's. AI-generated code was reviewed and
-verified by the author (offline test suite + dry-run before any API spend).

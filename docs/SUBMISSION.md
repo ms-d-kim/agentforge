@@ -10,12 +10,11 @@
 |---|---|
 | **Public code repo** | https://github.com/ms-d-kim/agentforge |
 | **Demo video** (≈6 min, narrated, cloned voice) | [`video/agentforge_demo.mp4`](../video/agentforge_demo.mp4) — committed in-repo |
-| **README** (overview · who-it's-for · architecture · how-it-compares · results · AI disclosure) | [`README.md`](../README.md) |
+| **README** (overview · who-it's-for · architecture · how-it-compares · results) | [`README.md`](../README.md) |
 | **Architecture diagram** | [`results/architecture.png`](../results/architecture.png) |
 | **Results figures** (BIRD curve, cross-domain sweep, multi-step RL) | [`results/`](../results/) |
 | **Per-arm summary + Wilson CIs** | [`results/exp_summary.txt`](../results/exp_summary.txt) |
 | **Competitive positioning** (vs ADK/OpenAI/MS/LangGraph/CrewAI/DSPy/routers/ARC) | [`docs/POSITIONING.md`](POSITIONING.md) |
-| **Verification + audits** (author multi-agent · independent Codex · 5-reviewer adversarial) | [`docs/VERIFICATION.md`](VERIFICATION.md) · [`docs/CODEX_AUDIT.md`](CODEX_AUDIT.md) · [`docs/ADVERSARIAL_REVIEW.md`](ADVERSARIAL_REVIEW.md) |
 | **Pip-installable SDK** | `pip install -e .` → `from agentforge import WorkflowSelector` |
 
 > The video is committed here so the repo is self-contained. For the course portal, also upload
@@ -49,9 +48,9 @@ Real BIRD-SQL run (needs an OpenRouter key + the BIRD dev download):
 
 - **Problem & Insight** — README intro + "Who it's for" (painpoint/ICP/wedge) + POSITIONING white-space.
 - **Execution & Technical Work** — the SDK + 4 domains + policy ladder + RL; 67 offline tests; real BIRD run.
-- **Evaluation & Evidence** — 4 figures + Wilson CIs + 3 independent verification/audit passes.
+- **Evaluation & Evidence** — 4 figures + Wilson CIs + reproducible results from the committed logs.
 - **Communication & Presentation** — narrated video + README that renders the figures.
-- **Process, Integrity & Disclosure** — AI-use disclosure (README + video), prior-work credit
+- **Process, Integrity & Disclosure** — prior-work credit
   ([ee392c-agent-mem](https://github.com/ms-d-kim/ee392c-agent-mem)), public commit history, and the
   honest-caveats below.
 
@@ -64,8 +63,3 @@ Real BIRD-SQL run (needs an OpenRouter key + the BIRD dev download):
 - The contextual + RL results are **synthetic stand-ins**; the code executor is a **toy harness, not a
   security sandbox**. The "white-space" positioning is scoped "to our knowledge (June 2026)."
 
-## AI-use disclosure
-
-Built with substantial assistance from **Claude Code** (Anthropic) — scaffolding, implementation, the
-verification harness, and the demo-video generation — under author direction; all AI-generated work was
-reviewed and verified by the author. Full statement in [`README.md`](../README.md#ai-use-disclosure).

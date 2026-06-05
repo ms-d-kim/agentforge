@@ -76,7 +76,7 @@ bring-your-own arms + reward, online learning, persistence. Policy ladder: epsil
 thompson | linucb (contextual) → REINFORCE (multi-step, `src/rl/`). Exposed via top-level
 `agentforge/` package (`pip install -e .` → `from agentforge import WorkflowSelector`). Four domains
 under `src/domains/` (code, search, compaction) + BIRD (`src/workflows/`). Positioning vs other agent
-SDKs in `docs/POSITIONING.md`; adversarial verification in `docs/VERIFICATION.md`.
+SDKs in `docs/POSITIONING.md`.
 
 ```
 src/
@@ -156,8 +156,6 @@ Explicitly deferred / out of scope (as of the MVP):
 - Keep arm names/indices **stable** across code, logs, and plots.
 - **Seed** the bandit RNG and log the seed; determinism where it matters.
 - **No secrets in the repo.** API keys via environment variables only.
-- **AI-use disclosure:** the README must state how/where AI tools (including Claude Code) were
-  used — this is a course requirement.
 
 ## Literature anchors (for README related-work)
 

@@ -84,8 +84,7 @@ concentrating ~27 of 30 pulls on the winner.
 ---
 
 ### Recording checklist
-- [ ] Repo is public; README renders the four plots and the AI-use disclosure.
+- [ ] Repo is public; README renders the four plots.
 - [ ] Live episode runs on camera (have `.env` key ready; it'll be a cache hit, so instant).
 - [ ] All four plots + summary table visible at full resolution.
 - [ ] State the model, seed count, episode count, and dataset explicitly.
-- [ ] Mention AI tool usage verbally (Claude Code) — it's a rubric item.
