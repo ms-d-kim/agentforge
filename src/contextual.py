@@ -12,6 +12,7 @@ the argmax. numpy is imported lazily so the stdlib policies stay dependency-free
 from __future__ import annotations
 
 import hashlib
+import math
 import random
 import re
 
@@ -55,10 +56,13 @@ class LinUCBBandit:
             return self.rng.randrange(self.n_arms), "linucb_nocontext"
         x = np.asarray(context, dtype=float)
         scores = []
-        for a in range(self.n_arms):
-            A_inv = np.linalg.inv(self.A[a])
-            theta = A_inv @ self.b[a]
-            scores.append(float(theta @ x + self.alpha * (x @ A_inv @ x) ** 0.5))
+        with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+            for a in range(self.n_arms):
+                A_inv = np.linalg.inv(self.A[a])
+                theta = A_inv @ self.b[a]
+                var = float(x @ A_inv @ x)  # ≥0 in theory; clamp for numerical safety
+                score = float(theta @ x) + self.alpha * (max(0.0, var) ** 0.5)
+                scores.append(score if math.isfinite(score) else float("-inf"))
         best = max(scores)
         candidates = [i for i, s in enumerate(scores) if s == best]
         return self.rng.choice(candidates), "linucb"
